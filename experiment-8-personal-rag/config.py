@@ -1,7 +1,6 @@
 """Central configuration for the Personal RAG system (Experiment 8)."""
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -33,13 +32,7 @@ RELEVANCE_DISTANCE_THRESHOLD = 1.15
 # ---------------------------------------------------------------------------
 # LLM (answer generation)
 # ---------------------------------------------------------------------------
-# The documented, primary generator is Claude. Set ANTHROPIC_API_KEY to use it.
-# Override the model with LLM_MODEL if you want a cheaper / different one.
-LLM_MODEL = os.environ.get("LLM_MODEL", "claude-opus-5-5")
-LLM_MAX_TOKENS = 600
-
-# When no API key is present, the system falls back to an offline, purely
-# extractive responder that answers *only* from retrieved chunks. This keeps
-# the pipeline fully runnable (and gradable) without credentials.
-def anthropic_api_key_present() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
+# The answer generator is pluggable — see llm.py. Choose a backend with the
+# LLM_PROVIDER env var (anthropic / ollama / groq / gemini). With none set, the
+# system uses a built-in offline extractive responder so the pipeline runs with
+# no network and no API key.

@@ -17,6 +17,7 @@ from langchain_core.documents import Document
 from langchain_chroma import Chroma
 
 import config
+import llm
 from embeddings import LocalONNXEmbeddings
 
 NOT_FOUND = (
@@ -81,6 +82,7 @@ class RagResult:
     answer: str
     used_llm: bool
     found: bool
+    engine: str = "offline extractive responder"
     sources: List[str] = field(default_factory=list)
     retrieved: List[Tuple[str, float]] = field(default_factory=list)  # (source, distance)
 
@@ -175,13 +177,11 @@ def _format_context(hits: List[Tuple[Document, float]]) -> str:
     return "\n\n---\n\n".join(blocks)
 
 
-def _generate_with_claude(question: str, context: str) -> str:
-    from langchain_anthropic import ChatAnthropic
+def _generate_with_llm(chat_model, question: str, context: str) -> str:
     from langchain_core.messages import SystemMessage, HumanMessage
 
-    llm = ChatAnthropic(model=config.LLM_MODEL, max_tokens=config.LLM_MAX_TOKENS)
     user = f"CONTEXT:\n{context}\n\nQUESTION: {question}\n\nAnswer using only the context above."
-    resp = llm.invoke([SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=user)])
+    resp = chat_model.invoke([SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=user)])
     return resp.content.strip() if isinstance(resp.content, str) else str(resp.content).strip()
 
 
@@ -266,24 +266,26 @@ def answer(question: str) -> RagResult:
     ]
     sources = list(dict.fromkeys(s for s, _ in retrieved))
 
-    # Relevance gate. The final grounding decision is made downstream (Claude is
+    # Relevance gate. The final grounding decision is made downstream (the LLM is
     # instructed to answer only from context; the offline responder refuses when
     # no question term matches any retrieved passage). Here we only catch the
     # degenerate case where retrieval returns nothing usable.
     if not hits or best_distance > config.RELEVANCE_DISTANCE_THRESHOLD:
         return RagResult(question, NOT_FOUND, used_llm=False, found=False,
-                         sources=[], retrieved=retrieved)
+                         engine=llm.label(), sources=[], retrieved=retrieved)
 
     context = _format_context(hits)
-    if config.anthropic_api_key_present():
+    chat_model, provider = llm.build_chat_model()
+    if chat_model is not None:
         try:
-            text = _generate_with_claude(question, context)
-            return RagResult(question, text, used_llm=True,
-                             found=NOT_FOUND not in text, sources=sources,
+            text = _generate_with_llm(chat_model, question, context)
+            return RagResult(question, text, used_llm=True, found=NOT_FOUND not in text,
+                             engine=llm.label(provider), sources=sources,
                              retrieved=retrieved)
         except Exception as exc:  # fall back rather than crash the demo
-            print(f"  [warn] Claude call failed ({type(exc).__name__}); using offline responder.")
+            print(f"  [warn] {provider} generation failed ({type(exc).__name__}); "
+                  f"using offline responder.")
 
     text = _extractive_answer(question, hits)
     return RagResult(question, text, used_llm=False, found=NOT_FOUND not in text,
-                     sources=sources, retrieved=retrieved)
+                     engine=llm.label("offline"), sources=sources, retrieved=retrieved)

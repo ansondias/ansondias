@@ -23,22 +23,23 @@ a **vector database**, and a **Large Language Model**.
 | Layer | Choice | Why |
 |---|---|---|
 | **Language** | Python 3.13 | Standard for RAG / ML tooling |
-| **Framework** | **LangChain** (`langchain`, `langchain-community`, `langchain-text-splitters`, `langchain-chroma`, `langchain-anthropic`) | Orchestrates loading → splitting → embedding → retrieval → generation |
+| **Framework** | **LangChain** (`langchain`, `langchain-community`, `langchain-text-splitters`, `langchain-chroma`, + a provider integration) | Orchestrates loading → splitting → embedding → retrieval → generation |
 | **Document parsing** | `pypdf` (PDF), `python-docx` (DOCX), built-in reader (TXT/MD) | Extract text from the four required formats |
 | **Text splitting** | `RecursiveCharacterTextSplitter` | Splits documents into overlapping, retrievable chunks |
 | **Embeddings** | **all-MiniLM-L6-v2** (384-dim), run as a bundled **ONNX** model on CPU | Fast sentence embeddings with **no GPU / PyTorch / download** required |
 | **Vector database** | **Chroma** (persistent, cosine distance) | Stores and similarity-searches the chunk vectors |
 | **Retrieval** | Hybrid: dense (vector similarity) **+** sparse (keyword) | Catches both semantic and exact-term matches |
-| **LLM (answer generation)** | **Claude** (`claude-opus-5-5`) via `langchain-anthropic` | Writes a concise answer grounded in the retrieved chunks |
-| **Offline fallback** | Built-in extractive responder | Runs the full pipeline **without any API key** for reproducibility/grading |
+| **LLM (answer generation)** | **Pluggable** via `LLM_PROVIDER`: Ollama (free, local) · Groq · Google Gemini · Claude | Writes a concise answer grounded in the retrieved chunks |
+| **Offline fallback** | Built-in extractive responder | Runs the full pipeline **without any API key or network** for reproducibility/grading |
 
-> **Two generation modes.** The documented, primary generator is **Claude**.
-> Set `ANTHROPIC_API_KEY` and the system calls Claude to synthesize the answer
-> from the retrieved context. With **no key set**, the system falls back to a
-> built-in **extractive** responder that returns the most relevant sentences
-> from the retrieved chunks — so the pipeline is always runnable end-to-end.
-> Either way, retrieval is identical and the "information unavailable" guardrail
-> applies. (The screenshots below were captured in offline mode.)
+> **Pluggable generation.** The answer generator is chosen with the
+> `LLM_PROVIDER` env var — **Ollama** (100% free, local, no key), **Groq** or
+> **Google Gemini** (free API tiers), or **Claude**. With nothing configured the
+> system uses a built-in **extractive** responder that returns the most relevant
+> sentences from the retrieved chunks, so the pipeline is always runnable
+> end-to-end. Whichever generator is active, retrieval and the "information
+> unavailable" guardrail are identical. (The screenshots below were captured in
+> offline mode; see *Choosing the answer generator* below to use a free LLM.)
 
 ---
 
@@ -103,7 +104,7 @@ personal documents, deliberately spread across **all four required formats**:
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. (Re)generate the sample knowledge-base documents  [optional]
+# 2. (Re)generate the knowledge-base documents from the resume  [optional]
 python build_knowledge_base.py
 
 # 3. Build the vector knowledge base (load → split → embed → store)
@@ -119,14 +120,35 @@ python app.py "What is the student's CGPA?"
 python app.py --interactive
 ```
 
-**To use Claude for answer generation** (recommended) instead of the offline
-responder:
+### Choosing the answer generator (pluggable LLM)
+
+With no configuration the system uses the built-in **offline extractive
+responder** — no network, no API key. To generate answers with a real LLM, set
+`LLM_PROVIDER`. All of these are free or have a free tier:
 
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-..."      # your key
-export LLM_MODEL="claude-opus-5-5"         # optional; default
+# Ollama — 100% free, runs locally, NO API key (recommended for free use)
+#   install Ollama, then:  ollama pull llama3.2
+export LLM_PROVIDER=ollama
+python app.py
+
+# Groq — free API tier (key: console.groq.com)
+export LLM_PROVIDER=groq   GROQ_API_KEY=gsk_...
+python app.py
+
+# Google Gemini — free API tier (key: aistudio.google.com)
+export LLM_PROVIDER=gemini GOOGLE_API_KEY=...
+python app.py
+
+# Claude — needs ANTHROPIC_API_KEY (console.anthropic.com; free trial credit)
+export LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-...
 python app.py
 ```
+
+Install only the integration you want (see `requirements.txt`), e.g.
+`pip install langchain-ollama`. Override the model for any provider with
+`LLM_MODEL`. Whichever generator is active, retrieval and the
+"answer-only-from-documents" guardrail are identical.
 
 ---
 
@@ -194,8 +216,8 @@ base (see screenshots above):
 
 1. **Retrieval** fetches the top-k chunks by hybrid vector + keyword search.
 2. **Grounding** — the generator is only ever shown the retrieved chunks:
-   - *Claude mode:* the system prompt forbids outside knowledge and instructs
-     Claude to reply with the fixed "unavailable" sentence when the answer is
+   - *LLM mode:* the system prompt forbids outside knowledge and instructs the
+     model to reply with the fixed "unavailable" sentence when the answer is
      not in the context.
    - *Offline mode:* the responder is purely **extractive** — it can only return
      text that already exists in the retrieved chunks, and returns the
@@ -212,6 +234,7 @@ base (see screenshots above):
 | `build_knowledge_base.py` | Generates the personal documents from the real resume |
 | `ingest.py` | Loads, splits, embeds and stores documents in Chroma |
 | `embeddings.py` | LangChain adapter for the all-MiniLM-L6-v2 ONNX model |
+| `llm.py` | Pluggable answer-generation backends (Ollama / Groq / Gemini / Claude) |
 | `rag.py` | Retrieval + relevance gate + answer generation |
 | `app.py` | CLI (sample set / single question / interactive) |
 | `config.py` | Chunking, retrieval and model settings |

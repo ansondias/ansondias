@@ -12,9 +12,14 @@ chromadb>=0.5
 # (no PyTorch / Hugging Face download required) and is exposed to LangChain
 # through a thin adapter in embeddings.py.
 
-# LLM provider (answer generation). Used when ANTHROPIC_API_KEY is set.
-langchain-anthropic>=0.3
+# LLM provider (answer generation) — pluggable via LLM_PROVIDER (see llm.py).
+# The offline extractive responder (default) needs none of these. Install only
+# the one you want to use:
+langchain-anthropic>=0.3     # LLM_PROVIDER=anthropic  (Claude)
 anthropic>=0.40
+# langchain-ollama>=0.2      # LLM_PROVIDER=ollama     (free, local, no key)
+# langchain-groq>=0.2        # LLM_PROVIDER=groq       (free API tier)
+# langchain-google-genai>=2  # LLM_PROVIDER=gemini     (free API tier)
 
 # Document extraction for the knowledge base (PDF / DOCX / TXT / MD)
 pypdf>=5

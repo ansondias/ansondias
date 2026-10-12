@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 import textwrap
 
-import config
+import llm
 import rag
 
 SAMPLE_QUESTIONS = [
@@ -32,7 +32,7 @@ SAMPLE_QUESTIONS = [
 
 
 def _print_result(res: rag.RagResult) -> None:
-    engine = "Claude LLM" if res.used_llm else "offline extractive responder"
+    engine = res.engine
     print(f"\nQ: {res.question}")
     lines = res.answer.splitlines() or [""]
     wrapped: list[str] = []
@@ -45,7 +45,7 @@ def _print_result(res: rag.RagResult) -> None:
 
 
 def _banner() -> None:
-    mode = "Claude LLM" if config.anthropic_api_key_present() else "offline extractive responder"
+    mode = llm.label()
     print("=" * 90)
     print("Personal RAG Question Answering System  —  Experiment 8")
     print(f"Embeddings: all-MiniLM-L6-v2 (ONNX) | Vector DB: Chroma | Generator: {mode}")
