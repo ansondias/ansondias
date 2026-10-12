@@ -1,0 +1,6 @@
+# Local virtualenv used to run Experiment 8
+.ragvenv/
+
+# Python caches
+__pycache__/
+*.pyc

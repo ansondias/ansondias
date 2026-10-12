@@ -1,0 +1,7 @@
+# Generated vector store (rebuild with `python ingest.py`)
+chroma_db/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

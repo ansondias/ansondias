@@ -1,0 +1,24 @@
+# Experiment 8 - Personal RAG Question Answering System
+# Core RAG framework
+langchain>=0.3
+langchain-community>=0.3
+langchain-text-splitters>=0.3
+langchain-chroma>=0.1
+
+# Vector database
+chromadb>=0.5
+
+# Embeddings: all-MiniLM-L6-v2 ships inside chromadb as an ONNX model
+# (no PyTorch / Hugging Face download required) and is exposed to LangChain
+# through a thin adapter in embeddings.py.
+
+# LLM provider (answer generation). Used when ANTHROPIC_API_KEY is set.
+langchain-anthropic>=0.3
+anthropic>=0.40
+
+# Document extraction for the knowledge base (PDF / DOCX / TXT / MD)
+pypdf>=5
+python-docx>=1.1
+
+# Only needed to (re)generate the sample Student Knowledge Base documents
+reportlab>=4
