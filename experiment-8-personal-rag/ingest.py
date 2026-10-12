@@ -72,6 +72,21 @@ def load_documents() -> List[Document]:
 # ---------------------------------------------------------------------------
 # Split -> embed -> store
 # ---------------------------------------------------------------------------
+def _merge_tiny_chunks(chunks: List[Document], min_len: int = 80) -> List[Document]:
+    """Fold a very short chunk (typically a lone section heading the splitter
+    isolated) into the following chunk from the same document, so a heading stays
+    with the content beneath it."""
+    merged: List[Document] = []
+    for ch in chunks:
+        if (merged
+                and len(merged[-1].page_content) < min_len
+                and merged[-1].metadata.get("source") == ch.metadata.get("source")):
+            merged[-1].page_content = merged[-1].page_content + "\n" + ch.page_content
+        else:
+            merged.append(ch)
+    return merged
+
+
 def build(reset: bool = True) -> Chroma:
     if reset and config.CHROMA_DIR.exists():
         shutil.rmtree(config.CHROMA_DIR)
@@ -89,6 +104,7 @@ def build(reset: bool = True) -> Chroma:
         separators=["\n\n", "\n", ". ", " ", ""],
     )
     chunks = splitter.split_documents(documents)
+    chunks = _merge_tiny_chunks(chunks)
     print(f"      -> {len(chunks)} chunks")
 
     print("[3/4] Embedding chunks with all-MiniLM-L6-v2 (384-dim ONNX, CPU)")

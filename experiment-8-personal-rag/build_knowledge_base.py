@@ -1,4 +1,4 @@
-"""Generate the sample ``Student Knowledge Base`` documents.
+"""Generate the ``Student Knowledge Base`` documents from Anson Dias's real CV.
 
 Run once to (re)create the personal documents the RAG system indexes:
 
@@ -6,14 +6,9 @@ Run once to (re)create the personal documents the RAG system indexes:
 
 Formats produced: Markdown (.md), plain text (.txt), PDF (.pdf), Word (.docx).
 
-NOTE ON DATA
-------------
-The name, e-mail, LinkedIn/GitHub handles, open-source projects and technical
-skills are real and public. The academic transcript, internship certificate and
-certifications use **illustrative placeholder values** so the lab is complete and
-answerable end-to-end; each generated "official" document is footed with a note
-saying so. Replace them with your real records before using this for anything
-other than the Experiment 8 demo.
+The content is taken from Anson Dias's actual resume/portfolio. The academic
+record and internship documents are the student's own honest records (no forged
+official seals or signatures) presented for the knowledge base.
 """
 from __future__ import annotations
 
@@ -28,12 +23,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib import colors
 
 KB = Path(__file__).resolve().parent / "Student Knowledge Base"
-KB.mkdir(parents=True, exist_ok=True)
-
-SAMPLE_NOTE = (
-    "Sample document generated for Experiment 8 (Personal RAG lab). "
-    "Academic/placeholder details are illustrative; replace with official records."
-)
+SUPPORTED = {".pdf", ".docx", ".txt", ".md"}
 
 
 # ---------------------------------------------------------------------------
@@ -44,122 +34,150 @@ RESUME_MD = """# Anson Dias — Resume
 ## Contact
 - **Full name:** Anson Dias
 - **Email:** ansondias18@gmail.com
+- **Phone:** +91 90829 24744
+- **Location:** Mumbai, India
 - **GitHub:** https://github.com/ansondias
 - **LinkedIn:** https://www.linkedin.com/in/anson-dias-6411072a1/
-- **Location:** India
 
-## Summary
-AI/ML engineer focused on large language models, NLP and retrieval. I build
-systems from first principles (custom tokenizers and transformers) and then
-measure how they actually behave, from fine-tuning a model to load-testing it
-in a serving engine.
+## Profile
+4th-year B.Tech (Computer Science, AI & ML) student at Atlas SkillTech
+University with hands-on experience across ML pipelines, NLP, blockchain, and
+operational analytics. Combines technical depth with real business context
+through ongoing operations and accounting work across three family-run
+enterprises in manufacturing and engineering.
 
 ## Education
-- **Example Institute of Technology** — B.E. in Computer Engineering (2021–2025)
-- **CGPA:** 8.74 / 10
+- **Atlas SkillTech University, Mumbai** — B.Tech in Computer Science
+  (AI & Machine Learning), 2023–2027. **GPA: 6.70 / 10** (through 3rd year).
+  - Relevant coursework: Machine Learning, Neural Networks, Blockchain
+    Development, Cybersecurity, Data Structures & Algorithms, Human-Computer
+    Interaction, Distributed Systems.
+- **Hiranandani Foundation School, Powai, Mumbai** — ISC (Class XI & XII),
+  Science Stream, 2021–2023. **76% aggregate.**
 
 ## Technical skills
-- **Programming languages:** Python, TypeScript, JavaScript, SQL, C
-- **ML / LLMs:** PyTorch, Hugging Face Transformers, vLLM, Sentence-Transformers, scikit-learn
-- **Retrieval & data:** Qdrant, ChromaDB, RAG pipelines, embeddings, semantic search
-- **Apps & infra:** FastAPI, Gradio, Docker, React, Git, Linux
+- **Programming languages:** Python, JavaScript, Solidity, SQL, C++
+- **ML / AI:** Scikit-learn, Pandas, NumPy, NLP, Jupyter
+- **Web & Blockchain:** React, HTML/CSS, Web3.js, IPFS, Netlify
+- **Data & BI:** Power BI, Excel, DAX
+- **Tools:** Figma, Git, VS Code
+- **Business / Ops:** Zoho Books, Tally, Invoice Management, Bookkeeping
+
+## Experience
+- **AI Content & Prompt Engineering Intern — CostumePeti (Startup), esaapa.com (2024)**
+  - Engineered custom prompts for the Fashion AI Virtual Try-On feature,
+    improving AI image generation quality and output consistency.
+  - Generated AI-based fashion imagery and assisted the product team with
+    backend prompt configuration for the virtual try-on pipeline.
+  - Iterated rapidly on prompt outputs based on user feedback.
+- **Operations & Analytics — Pinnacle Enterprises (Powder Coating, SIPCOT Hosur), Apr 2025 – Present**
+  - Built an integrated cost-tracking workbook modelling per-sq-m unit economics
+    across 7-stage pretreatment, 3-booth manual spray coating and gas-curing.
+  - Designed a production tracking system covering ~9,100 sq m/month throughput
+    and ~10 oven cycles/day, benchmarking 95% powder transfer efficiency.
+  - Manage the accounting workflow via Zoho Books (invoicing, AR ageing, monthly close).
+- **Accounts & Bookkeeping — Anson Engg Works & Icarus Enterprises (Automotive Engineering Manufacturing), Ongoing**
+  - End-to-end accounting workflow: invoice entry, bills processing, vendor
+    reconciliation and bookkeeping; maintaining financial records.
 
 ## Projects
-- **vllm-high-throughput-serving** — Served Qwen2.5-0.5B with vLLM on a Tesla T4
-  and load-tested it; throughput scaled ~24x (162 to 3,963 tokens/s) from 1 to 50
-  concurrent requests. Studied continuous batching and PagedAttention KV-cache.
-- **tiny-transformer-lm** *(final-year project)* — A GPT-style decoder-only
-  language model built from scratch in **Python** with PyTorch: custom BPE
-  tokenizer, causal multi-head attention, training loop and text generation,
-  plus an ablation study on multi-head attention.
-- **gpt2-imdb-sentiment** — Fine-tuned GPT-2 (124M) with a classification head on
-  IMDb reviews using the Hugging Face Trainer, reaching 86.8% eval accuracy, and
-  served it through a Gradio app.
-- **semantic-search-qdrant** — Meaning-based search with Sentence-Transformer
-  embeddings (all-MiniLM-L6-v2) and Qdrant, with metadata filtering and PDF chunk search.
-- **ml-pipeline-architect** — Gemini-powered app (React/TypeScript + FastAPI) that
-  turns a plain-English ML problem into a scikit-learn pipeline.
-- **metadata-forensics-lab** — Digital-forensics lab on reading, forging and
-  recovering metadata in DOCX, PDF and MP3 files with ExifTool.
+- **Cost Analytics Workbook — Powder Coating SME** (Pinnacle Enterprises, 2025):
+  integrated multi-sheet workbook modelling per-sq-m unit economics. Stack: Excel,
+  structured workbook design, unit-economics modelling.
+- **Multi-Business Accounting Automation:** Python file-handling scripts that
+  automate extraction and processing of invoice and bill documents across three
+  family-business accounting workflows. Stack: Python, file handling, document
+  parsing, openpyxl.
+- **Blockchain DApp — Decentralised User Registry:** Ethereum DApp storing user
+  data via Solidity smart contracts with a Web3.js frontend and IPFS storage.
+  Stack: Solidity, Web3.js, Ethereum, IPFS.
+- **Pinnacle Enterprises — Website Development & Deployment:** client-facing
+  website for a powder-coating SME (Honda Parts, TVS Motors, Sundaram Auto),
+  Formspree contact handling, deployed via Netlify with CI on push.
+  Stack: HTML/CSS, JavaScript, Netlify, Formspree.
+- **ML Specialization Capstone** *(final-year / capstone project, in progress, Q2 2026)*:
+  DeepLearning.AI Machine Learning Specialization capstone projects (supervised
+  learning, advanced algorithms, unsupervised learning + recommenders),
+  implemented in **Python** (Jupyter, scikit-learn).
 
-## Internships
-- **ML Engineering Intern — Northwind AI (sample):** Built RAG prototypes with
-  LangChain and Qdrant and optimised LLM inference throughput. (May–July 2024)
-- **Research Intern — Example Institute NLP Lab (sample):** Worked on transformer
-  interpretability and tokenization experiments. (Dec 2023–Feb 2024)
+## Final-year / capstone project language
+The final-year / capstone project (ML Specialization Capstone) is implemented in **Python** (Jupyter, scikit-learn).
 
-## Final-year project language
-The final-year project (tiny-transformer-lm) was implemented in **Python** using PyTorch.
+## Certifications
+- Google Machine Learning Crash Course — in progress (Q2 2026).
+- DeepLearning.AI Machine Learning Specialization (Coursera) — in progress (Q2 2026).
+
+## Languages
+English (Fluent), Hindi (Fluent), Marathi (Basic), French (Basic).
 """
 
 
 # ---------------------------------------------------------------------------
 # 2. Certifications (plain text)
 # ---------------------------------------------------------------------------
-CERTS_TXT = f"""CERTIFICATIONS AND COURSES — ANSON DIAS
+CERTS_TXT = """CERTIFICATIONS AND COURSES — ANSON DIAS
 ========================================
 
-1. Deep Learning Specialization — DeepLearning.AI (Coursera)
-2. Natural Language Processing with Transformers — Hugging Face (course)
-3. Machine Learning — Stanford Online (Coursera)
-4. Docker for Developers — online certificate
-5. CS50x: Introduction to Computer Science — HarvardX
+1. Google Machine Learning Crash Course — in progress (expected Q2 2026).
+2. DeepLearning.AI Machine Learning Specialization (Coursera) — in progress
+   (expected Q2 2026). Covers supervised learning, advanced algorithms, and
+   unsupervised learning with recommender systems.
 
-Skills validated: deep learning, transformers, NLP, model fine-tuning,
-containerization with Docker, and core computer science.
-
-{SAMPLE_NOTE}
+Focus areas: machine learning, supervised and unsupervised learning,
+recommender systems, and applied ML with Python.
 """
 
 
 # ---------------------------------------------------------------------------
-# 3. Achievements and awards (Markdown)
+# 3. Achievements and highlights (Markdown)
 # ---------------------------------------------------------------------------
-ACHIEVEMENTS_MD = f"""# Achievements and Awards — Anson Dias
+ACHIEVEMENTS_MD = """# Key Achievements & Highlights — Anson Dias
 
-- **Winner**, Inter-College AI Hackathon 2024 — built a retrieval-augmented
-  assistant over lecture notes in 24 hours.
-- **Finalist**, National Machine Learning Challenge 2023.
-- Published the open-source project **tiny-transformer-lm**, which reproduces a
-  GPT-style language model from scratch and includes an original ablation study.
-- Achieved **86.8% accuracy** fine-tuning GPT-2 for IMDb sentiment classification.
-- Demonstrated **~24x throughput scaling** when load-testing an LLM served with vLLM.
-- Dean's List for academic performance (CGPA 8.74 / 10).
-
-_{SAMPLE_NOTE}_
+- Built and **deployed a client-facing company website** for a powder-coating SME
+  (Honda Parts, TVS Motors, Sundaram Auto) with Netlify CI-on-push and Formspree
+  contact handling.
+- Designed a production tracking system benchmarking **95% powder transfer
+  efficiency** across ~9,100 sq m/month throughput and ~10 oven cycles/day.
+- Built an integrated **cost-tracking workbook** modelling per-sq-m unit economics
+  across a 7-stage pretreatment and 3-booth coating line, enabling quoting
+  accuracy and per-order margin visibility.
+- Automated **multi-business accounting** with Python document-parsing scripts,
+  cutting manual data entry during periodic close cycles across three enterprises.
+- Developed a **blockchain DApp** (Ethereum / Solidity / Web3.js / IPFS) for a
+  decentralised user registry.
+- Selected as an **AI Content & Prompt Engineering Intern** at CostumePeti,
+  improving a Fashion AI Virtual Try-On image pipeline.
 """
 
 
 # ---------------------------------------------------------------------------
 # 4. Project report (Markdown)
 # ---------------------------------------------------------------------------
-PROJECT_REPORT_MD = """# Project Report — High-Throughput LLM Serving with vLLM
+PROJECT_REPORT_MD = """# Project Report — Multi-Business Accounting Automation
 
 **Author:** Anson Dias
-**Repository:** vllm-high-throughput-serving
 
 ## Objective
-Serve a small instruction-tuned LLM (Qwen2.5-0.5B) efficiently and measure how
-throughput and latency behave as concurrency increases.
+Reduce manual data-entry effort during periodic accounting close cycles by
+automatically extracting and processing invoice and bill documents across three
+family-run businesses.
 
 ## Method
-- Deployed the model with **vLLM** on a single **NVIDIA Tesla T4** GPU.
-- Issued batches of concurrent completion requests (1, 10, 25, 50 in flight).
-- Recorded tokens/second, wall-clock time and continuous-batching behaviour.
-- Inspected PagedAttention KV-cache utilisation.
+- Wrote **Python** file-handling scripts to read and parse invoice/bill documents.
+- Extracted key fields and structured them for the accounting workflow.
+- Integrated the output with the Zoho Books workflow used at Pinnacle Enterprises.
 
-## Results
-- Throughput scaled roughly **24x**, from ~162 tokens/s at 1 request to
-  ~3,963 tokens/s at 50 concurrent requests.
-- End-to-end wall time stayed between **0.8 and 1.6 seconds** across loads.
-- vLLM packed as many as **49 requests into a single continuous batch**.
+## Tools / Stack
+Python, file handling, document parsing, openpyxl.
 
-## Tools
-Python, vLLM, PyTorch, Hugging Face model hub, CUDA (Tesla T4).
+## Outcome
+- Cut manual data-entry effort during monthly close across three enterprises.
+- Made invoice/bill processing more consistent and repeatable.
 
-## Conclusion
-Continuous batching and PagedAttention let a tiny model reach very high
-aggregate throughput on modest hardware, making it practical for RAG back-ends.
+## Related work
+A separate cost-analytics workbook models per-sq-m unit economics for the powder
+coating business (Excel, unit-economics modelling), and a client-facing website
+was deployed on Netlify with CI on push.
 """
 
 
@@ -167,38 +185,36 @@ def write_text_files() -> None:
     (KB / "resume.md").write_text(RESUME_MD, encoding="utf-8")
     (KB / "certifications.txt").write_text(CERTS_TXT, encoding="utf-8")
     (KB / "achievements_and_awards.md").write_text(ACHIEVEMENTS_MD, encoding="utf-8")
-    (KB / "project_report_vllm.md").write_text(PROJECT_REPORT_MD, encoding="utf-8")
+    (KB / "project_report.md").write_text(PROJECT_REPORT_MD, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
-# 5. Academic transcript (PDF via reportlab)
+# 5. Academic record / transcript (PDF)
 # ---------------------------------------------------------------------------
 def write_transcript_pdf() -> None:
     styles = getSampleStyleSheet()
     title = ParagraphStyle("t", parent=styles["Title"], fontSize=16)
-    small = ParagraphStyle("s", parent=styles["Normal"], fontSize=8, textColor=colors.grey)
 
     doc = SimpleDocTemplate(str(KB / "academic_transcript.pdf"), pagesize=A4,
                             topMargin=20 * mm, bottomMargin=20 * mm)
     story = [
-        Paragraph("Example Institute of Technology", title),
-        Paragraph("Official Academic Transcript", styles["Heading2"]),
+        Paragraph("Atlas SkillTech University, Mumbai", title),
+        Paragraph("Academic Record / Transcript (through 3rd year)", styles["Heading2"]),
         Spacer(1, 6 * mm),
         Paragraph("<b>Student name:</b> Anson Dias", styles["Normal"]),
-        Paragraph("<b>Programme:</b> Bachelor of Engineering (B.E.), Computer Engineering", styles["Normal"]),
-        Paragraph("<b>Duration:</b> 2021 - 2025", styles["Normal"]),
-        Paragraph("<b>Cumulative CGPA:</b> 8.74 / 10 (approx. 83%)", styles["Normal"]),
-        Spacer(1, 6 * mm),
+        Paragraph("<b>Programme:</b> B.Tech — Computer Science (AI &amp; Machine Learning)", styles["Normal"]),
+        Paragraph("<b>Duration:</b> 2023 – 2027 (currently 4th year)", styles["Normal"]),
+        Paragraph("<b>GPA:</b> 6.70 / 10 (through 3rd year)", styles["Normal"]),
+        Spacer(1, 5 * mm),
+        Paragraph("<b>Relevant coursework</b>", styles["Heading3"]),
     ]
-
     rows = [
-        ["Semester", "Key courses", "SGPA"],
-        ["Sem 5", "Machine Learning, Operating Systems, DBMS", "8.6"],
-        ["Sem 6", "Deep Learning, Computer Networks, Cloud Computing", "8.8"],
-        ["Sem 7", "Natural Language Processing, Big Data", "8.9"],
-        ["Sem 8", "Final-Year Project (tiny-transformer-lm), Electives", "9.0"],
+        ["Area", "Courses"],
+        ["Core CS", "Data Structures & Algorithms, Distributed Systems"],
+        ["AI / ML", "Machine Learning, Neural Networks"],
+        ["Applied", "Blockchain Development, Cybersecurity, Human-Computer Interaction"],
     ]
-    table = Table(rows, colWidths=[28 * mm, 100 * mm, 22 * mm])
+    table = Table(rows, colWidths=[30 * mm, 120 * mm])
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2d3748")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
@@ -206,45 +222,44 @@ def write_transcript_pdf() -> None:
         ("FONTSIZE", (0, 0), (-1, -1), 9),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
     ]))
-    story.append(table)
-    story.append(Spacer(1, 8 * mm))
-    story.append(Paragraph("Final-year project: tiny-transformer-lm, implemented in Python (PyTorch).",
-                           styles["Normal"]))
-    story.append(Spacer(1, 10 * mm))
-    story.append(Paragraph(SAMPLE_NOTE, small))
+    story += [
+        table,
+        Spacer(1, 6 * mm),
+        Paragraph("<b>Final-year / capstone project:</b> ML Specialization Capstone "
+                  "(in progress, Q2 2026), implemented in Python (Jupyter, scikit-learn).",
+                  styles["Normal"]),
+        Spacer(1, 5 * mm),
+        Paragraph("<b>Prior education:</b> ISC (Class XI &amp; XII), Science Stream, "
+                  "Hiranandani Foundation School, Powai, Mumbai, 2021–2023 — 76% aggregate.",
+                  styles["Normal"]),
+    ]
     doc.build(story)
 
 
 # ---------------------------------------------------------------------------
-# 6. Internship completion certificate (DOCX via python-docx)
+# 6. Internship experience certificate (DOCX)
 # ---------------------------------------------------------------------------
 def write_internship_docx() -> None:
     d = DocxDocument()
-    style = d.styles["Normal"]
-    style.font.name = "Calibri"
-    style.font.size = Pt(11)
+    d.styles["Normal"].font.name = "Calibri"
+    d.styles["Normal"].font.size = Pt(11)
 
-    h = d.add_heading("Internship Completion Certificate", level=0)
-    d.add_heading("Northwind AI (sample employer)", level=2)
+    d.add_heading("Internship Experience", level=0)
+    d.add_heading("AI Content & Prompt Engineering Intern — CostumePeti", level=2)
+    d.add_paragraph("Organisation: CostumePeti (startup) · esaapa.com")
+    d.add_paragraph("Role: AI Content & Prompt Engineering Intern · Year: 2024")
     d.add_paragraph(
-        "This is to certify that Anson Dias successfully completed an internship "
-        "as a Machine Learning Engineering Intern at Northwind AI from "
-        "May 2024 to July 2024."
+        "Anson Dias worked as an AI Content & Prompt Engineering Intern at "
+        "CostumePeti in 2024. During the internship he engineered custom prompts "
+        "for the Fashion AI Virtual Try-On feature, improving AI image generation "
+        "quality and output consistency."
     )
     d.add_paragraph(
-        "During the internship, Anson built retrieval-augmented generation (RAG) "
-        "prototypes using LangChain and the Qdrant vector database, and worked on "
-        "improving large language model inference throughput with vLLM. The work "
-        "was carried out primarily in Python."
+        "He generated AI-based fashion imagery, assisted the product team with "
+        "backend prompt configuration for the virtual try-on pipeline, and iterated "
+        "rapidly on prompt outputs based on user feedback in a fast-paced startup "
+        "environment."
     )
-    d.add_paragraph(
-        "Anson demonstrated strong skills in Python, PyTorch, NLP and vector search, "
-        "and is commended for the quality of the delivered prototypes."
-    )
-    d.add_paragraph()
-    d.add_paragraph("Authorised signatory: Head of ML, Northwind AI")
-    note = d.add_paragraph(SAMPLE_NOTE)
-    note.runs[0].italic = True
     d.save(str(KB / "internship_certificate.docx"))
 
 
@@ -257,31 +272,42 @@ def write_sop_docx() -> None:
     d.add_heading("Statement of Purpose", level=0)
     d.add_heading("Anson Dias", level=2)
     d.add_paragraph(
-        "My name is Anson Dias and I am an AI/ML engineer. My research interests "
-        "are large language model inference and serving performance, efficient "
-        "natural language processing, transformer architectures, and "
-        "retrieval-augmented generation (RAG) / semantic search."
+        "My name is Anson Dias and I am a 4th-year B.Tech student in Computer "
+        "Science (AI & Machine Learning) at Atlas SkillTech University, Mumbai."
     )
     d.add_paragraph(
-        "I enjoy building systems from first principles. I implemented a GPT-style "
-        "language model and a custom BPE tokenizer from scratch in Python, "
-        "fine-tuned GPT-2 for sentiment analysis, and load-tested an LLM served "
-        "with vLLM to understand throughput and batching."
+        "My interests lie in machine learning pipelines, natural language "
+        "processing, blockchain development, and operational / business analytics. "
+        "I enjoy applying AI and data to real-world problems — I run operations, "
+        "analytics and accounting workflows across three family-run manufacturing "
+        "and engineering businesses, and I build the tooling that supports them."
     )
     d.add_paragraph(
-        "Going forward, I want to work on making language models cheaper and faster "
-        "to run, and on grounding them in trustworthy private knowledge through "
-        "retrieval. I can be reached at ansondias18@gmail.com or via GitHub "
-        "(github.com/ansondias) and LinkedIn."
+        "I have engineered prompts for a Fashion AI virtual try-on pipeline, "
+        "automated multi-business accounting with Python, built a blockchain DApp, "
+        "and deployed a client-facing website. Going forward I want to deepen my "
+        "work in machine learning and retrieval-based systems that ground AI in "
+        "trustworthy, domain-specific data."
+    )
+    d.add_paragraph(
+        "I can be reached at ansondias18@gmail.com or +91 90829 24744, and via "
+        "GitHub (github.com/ansondias) and LinkedIn."
     )
     d.save(str(KB / "statement_of_purpose.docx"))
 
 
 def main() -> None:
+    KB.mkdir(parents=True, exist_ok=True)
+    # Remove any previous knowledge-base files so no stale documents remain.
+    for p in KB.iterdir():
+        if p.is_file() and p.suffix.lower() in SUPPORTED:
+            p.unlink()
+
     write_text_files()
     write_transcript_pdf()
     write_internship_docx()
     write_sop_docx()
+
     files = sorted(p.name for p in KB.iterdir() if p.is_file())
     print(f"Wrote {len(files)} documents to '{KB.name}/':")
     for name in files:

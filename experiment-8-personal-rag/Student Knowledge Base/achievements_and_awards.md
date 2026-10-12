@@ -1,12 +1,16 @@
-# Achievements and Awards — Anson Dias
+# Key Achievements & Highlights — Anson Dias
 
-- **Winner**, Inter-College AI Hackathon 2024 — built a retrieval-augmented
-  assistant over lecture notes in 24 hours.
-- **Finalist**, National Machine Learning Challenge 2023.
-- Published the open-source project **tiny-transformer-lm**, which reproduces a
-  GPT-style language model from scratch and includes an original ablation study.
-- Achieved **86.8% accuracy** fine-tuning GPT-2 for IMDb sentiment classification.
-- Demonstrated **~24x throughput scaling** when load-testing an LLM served with vLLM.
-- Dean's List for academic performance (CGPA 8.74 / 10).
-
-_Sample document generated for Experiment 8 (Personal RAG lab). Academic/placeholder details are illustrative; replace with official records._
+- Built and **deployed a client-facing company website** for a powder-coating SME
+  (Honda Parts, TVS Motors, Sundaram Auto) with Netlify CI-on-push and Formspree
+  contact handling.
+- Designed a production tracking system benchmarking **95% powder transfer
+  efficiency** across ~9,100 sq m/month throughput and ~10 oven cycles/day.
+- Built an integrated **cost-tracking workbook** modelling per-sq-m unit economics
+  across a 7-stage pretreatment and 3-booth coating line, enabling quoting
+  accuracy and per-order margin visibility.
+- Automated **multi-business accounting** with Python document-parsing scripts,
+  cutting manual data entry during periodic close cycles across three enterprises.
+- Developed a **blockchain DApp** (Ethereum / Solidity / Web3.js / IPFS) for a
+  decentralised user registry.
+- Selected as an **AI Content & Prompt Engineering Intern** at CostumePeti,
+  improving a Fashion AI Virtual Try-On image pipeline.

@@ -18,8 +18,8 @@ SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md"}
 # ---------------------------------------------------------------------------
 # Chunking
 # ---------------------------------------------------------------------------
-CHUNK_SIZE = 450          # characters per chunk (keeps individual facts isolated)
-CHUNK_OVERLAP = 80        # overlap keeps sentences from being split mid-thought
+CHUNK_SIZE = 750          # characters per chunk (keeps a section's heading + content together)
+CHUNK_OVERLAP = 120       # overlap keeps sentences from being split mid-thought
 
 # ---------------------------------------------------------------------------
 # Retrieval

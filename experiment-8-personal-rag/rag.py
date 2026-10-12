@@ -191,10 +191,18 @@ def _clean(line: str) -> str:
     return line.strip(" \t-")
 
 
+def _is_heading(cleaned: str, raw: str) -> bool:
+    return raw.lstrip().startswith("#") or (
+        len(_tokenize(cleaned)) <= 3 and ":" not in cleaned and len(cleaned) < 40
+    )
+
+
 def _extractive_answer(question: str, hits: List[Tuple[Document, float]]) -> str:
-    """Offline, no-LLM responder: return the lines from retrieved chunks that
-    best overlap the (expanded) question terms. Purely extractive — it selects
-    text that is already in the documents and never invents facts."""
+    """Offline, no-LLM responder: return the text from retrieved chunks that best
+    overlaps the (expanded) question terms. Purely extractive — it only selects
+    text that is already in the documents and never invents facts. When a section
+    heading matches, it returns the content lines under that heading (e.g. the
+    skills list or the achievements bullets), not the bare heading."""
     terms = _query_terms(question)
     if not terms:
         return NOT_FOUND
@@ -202,43 +210,51 @@ def _extractive_answer(question: str, hits: List[Tuple[Document, float]]) -> str
     candidates: List[Tuple[float, str, str]] = []
     for doc, _ in hits:
         source = doc.metadata.get("source", "?")
-        for raw in re.split(r"\n+|(?<=[.!?])\s+", doc.page_content):
-            line = _clean(raw)
+        lines = [(_clean(r), r) for r in re.split(r"\n+", doc.page_content)]
+        for i, (line, raw) in enumerate(lines):
             if len(line) < 6:
                 continue
-            line_lc = line.lower()
-            matched = sum(1 for t in terms if _term_matches(t, line_lc))
-            if not matched:
-                continue
-            is_heading = raw.lstrip().startswith("#") or (len(_tokenize(line)) <= 3 and ":" not in line)
-            has_value = (":" in line) or len(_tokenize(line)) >= 4
-            score = matched * 2.0
-            if has_value:
-                score += 1.0
-            if is_heading:
-                score -= 1.5
-            candidates.append((score, line, source))
+            if _is_heading(line, raw):
+                matched = sum(1 for t in terms if _term_matches(t, line.lower()))
+                if not matched:
+                    continue
+                follow: List[str] = []
+                for cl, cr in lines[i + 1:]:
+                    if cr.lstrip().startswith("#"):
+                        break
+                    if len(cl) >= 6:
+                        follow.append(cl)
+                    if len(follow) >= 2:
+                        break
+                if not follow:  # don't answer with a bare heading
+                    continue
+                candidates.append((matched * 2.0 + 1.0, f"{line}: " + " ".join(follow), source))
+            else:
+                for sent in re.split(r"(?<=[.!?])\s+", line):
+                    sent = sent.strip()
+                    if len(sent) < 6:
+                        continue
+                    matched = sum(1 for t in terms if _term_matches(t, sent.lower()))
+                    if not matched:
+                        continue
+                    has_value = (":" in sent) or len(_tokenize(sent)) >= 4
+                    candidates.append((matched * 2.0 + (1.0 if has_value else 0.0), sent, source))
 
-    if not candidates:
+    if not candidates or max(c[0] for c in candidates) <= 0:
         return NOT_FOUND
 
     candidates.sort(key=lambda x: x[0], reverse=True)
-    if candidates[0][0] <= 0:
-        return NOT_FOUND
-
     chosen: List[Tuple[str, str]] = []
-    seen = set()
-    for _, line, source in candidates:
-        key = line.lower()
-        if key in seen:
+    for _, text, source in candidates:
+        key = text.lower()
+        if any(key in c.lower() or c.lower() in key for c, _ in chosen):
             continue
-        seen.add(key)
-        chosen.append((line, source))
+        chosen.append((text, source))
         if len(chosen) >= 3:
             break
 
     srcs = ", ".join(dict.fromkeys(s for _, s in chosen))
-    body = " ".join(dict.fromkeys(line for line, _ in chosen))
+    body = " ".join(t for t, _ in chosen)
     return f"{body}\n(Source: {srcs})"
 
 

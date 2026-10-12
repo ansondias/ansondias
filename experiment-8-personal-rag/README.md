@@ -81,20 +81,19 @@ personal documents, deliberately spread across **all four required formats**:
 
 | Document | Format | Contents |
 |---|---|---|
-| `resume.md` | Markdown | Contact, education, skills, projects, internships |
-| `project_report_vllm.md` | Markdown | Detailed project report (vLLM serving) |
-| `achievements_and_awards.md` | Markdown | Awards, hackathon wins, highlights |
+| `resume.md` | Markdown | Contact, education, skills, projects, experience |
+| `project_report.md` | Markdown | Project report (Multi-Business Accounting Automation) |
+| `achievements_and_awards.md` | Markdown | Key achievements & highlights |
 | `certifications.txt` | Plain text | Certificates and online courses |
-| `academic_transcript.pdf` | PDF | Semester-wise grades, CGPA, university |
-| `internship_certificate.docx` | Word | Internship completion certificate |
-| `statement_of_purpose.docx` | Word | SOP with research interests + contact |
+| `academic_transcript.pdf` | PDF | University, programme, GPA, coursework |
+| `internship_certificate.docx` | Word | Internship experience (CostumePeti) |
+| `statement_of_purpose.docx` | Word | SOP with interests + contact |
 
-> **Note on the data.** Name, e-mail, GitHub/LinkedIn, the open-source projects
-> and technical skills are **real and public**. The transcript, internship
-> certificate and certifications use **illustrative placeholder values** (each
-> generated "official" document carries a footer saying so) so the lab is
-> complete and answerable end-to-end. Replace them with your real records via
-> `build_knowledge_base.py`.
+> **Note on the data.** The documents are built from Anson Dias's real
+> resume/portfolio (name, contact, education, skills, projects, internship,
+> certifications). The academic record and internship documents are the
+> student's own honest records — plain summaries with no forged official seals
+> or signatures. Regenerate them any time with `build_knowledge_base.py`.
 
 ---
 
@@ -182,7 +181,7 @@ base (see screenshots above):
 | 5 | What certifications has the student earned? | certifications |
 | 6 | What technical skills are listed in the resume? | resume |
 | 7 | Which programming language was used in the final-year project? | resume, transcript |
-| 8 | What is the student's CGPA or percentage? | transcript, achievements |
+| 8 | What is the student's CGPA or percentage? | transcript, resume |
 | 9 | Which college or university does the student belong to? | transcript, resume |
 | 10 | What awards or achievements has the student received? | achievements |
 | 11 | What are the student's research interests? | statement of purpose |
@@ -210,7 +209,7 @@ base (see screenshots above):
 
 | File | Purpose |
 |---|---|
-| `build_knowledge_base.py` | Generates the sample personal documents |
+| `build_knowledge_base.py` | Generates the personal documents from the real resume |
 | `ingest.py` | Loads, splits, embeds and stores documents in Chroma |
 | `embeddings.py` | LangChain adapter for the all-MiniLM-L6-v2 ONNX model |
 | `rag.py` | Retrieval + relevance gate + answer generation |

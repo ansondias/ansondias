@@ -1,13 +1,10 @@
 CERTIFICATIONS AND COURSES — ANSON DIAS
 ========================================
 
-1. Deep Learning Specialization — DeepLearning.AI (Coursera)
-2. Natural Language Processing with Transformers — Hugging Face (course)
-3. Machine Learning — Stanford Online (Coursera)
-4. Docker for Developers — online certificate
-5. CS50x: Introduction to Computer Science — HarvardX
+1. Google Machine Learning Crash Course — in progress (expected Q2 2026).
+2. DeepLearning.AI Machine Learning Specialization (Coursera) — in progress
+   (expected Q2 2026). Covers supervised learning, advanced algorithms, and
+   unsupervised learning with recommender systems.
 
-Skills validated: deep learning, transformers, NLP, model fine-tuning,
-containerization with Docker, and core computer science.
-
-Sample document generated for Experiment 8 (Personal RAG lab). Academic/placeholder details are illustrative; replace with official records.
+Focus areas: machine learning, supervised and unsupervised learning,
+recommender systems, and applied ML with Python.

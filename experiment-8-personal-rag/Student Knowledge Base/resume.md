@@ -3,49 +3,78 @@
 ## Contact
 - **Full name:** Anson Dias
 - **Email:** ansondias18@gmail.com
+- **Phone:** +91 90829 24744
+- **Location:** Mumbai, India
 - **GitHub:** https://github.com/ansondias
 - **LinkedIn:** https://www.linkedin.com/in/anson-dias-6411072a1/
-- **Location:** India
 
-## Summary
-AI/ML engineer focused on large language models, NLP and retrieval. I build
-systems from first principles (custom tokenizers and transformers) and then
-measure how they actually behave, from fine-tuning a model to load-testing it
-in a serving engine.
+## Profile
+4th-year B.Tech (Computer Science, AI & ML) student at Atlas SkillTech
+University with hands-on experience across ML pipelines, NLP, blockchain, and
+operational analytics. Combines technical depth with real business context
+through ongoing operations and accounting work across three family-run
+enterprises in manufacturing and engineering.
 
 ## Education
-- **Example Institute of Technology** — B.E. in Computer Engineering (2021–2025)
-- **CGPA:** 8.74 / 10
+- **Atlas SkillTech University, Mumbai** — B.Tech in Computer Science
+  (AI & Machine Learning), 2023–2027. **GPA: 6.70 / 10** (through 3rd year).
+  - Relevant coursework: Machine Learning, Neural Networks, Blockchain
+    Development, Cybersecurity, Data Structures & Algorithms, Human-Computer
+    Interaction, Distributed Systems.
+- **Hiranandani Foundation School, Powai, Mumbai** — ISC (Class XI & XII),
+  Science Stream, 2021–2023. **76% aggregate.**
 
 ## Technical skills
-- **Programming languages:** Python, TypeScript, JavaScript, SQL, C
-- **ML / LLMs:** PyTorch, Hugging Face Transformers, vLLM, Sentence-Transformers, scikit-learn
-- **Retrieval & data:** Qdrant, ChromaDB, RAG pipelines, embeddings, semantic search
-- **Apps & infra:** FastAPI, Gradio, Docker, React, Git, Linux
+- **Programming languages:** Python, JavaScript, Solidity, SQL, C++
+- **ML / AI:** Scikit-learn, Pandas, NumPy, NLP, Jupyter
+- **Web & Blockchain:** React, HTML/CSS, Web3.js, IPFS, Netlify
+- **Data & BI:** Power BI, Excel, DAX
+- **Tools:** Figma, Git, VS Code
+- **Business / Ops:** Zoho Books, Tally, Invoice Management, Bookkeeping
+
+## Experience
+- **AI Content & Prompt Engineering Intern — CostumePeti (Startup), esaapa.com (2024)**
+  - Engineered custom prompts for the Fashion AI Virtual Try-On feature,
+    improving AI image generation quality and output consistency.
+  - Generated AI-based fashion imagery and assisted the product team with
+    backend prompt configuration for the virtual try-on pipeline.
+  - Iterated rapidly on prompt outputs based on user feedback.
+- **Operations & Analytics — Pinnacle Enterprises (Powder Coating, SIPCOT Hosur), Apr 2025 – Present**
+  - Built an integrated cost-tracking workbook modelling per-sq-m unit economics
+    across 7-stage pretreatment, 3-booth manual spray coating and gas-curing.
+  - Designed a production tracking system covering ~9,100 sq m/month throughput
+    and ~10 oven cycles/day, benchmarking 95% powder transfer efficiency.
+  - Manage the accounting workflow via Zoho Books (invoicing, AR ageing, monthly close).
+- **Accounts & Bookkeeping — Anson Engg Works & Icarus Enterprises (Automotive Engineering Manufacturing), Ongoing**
+  - End-to-end accounting workflow: invoice entry, bills processing, vendor
+    reconciliation and bookkeeping; maintaining financial records.
 
 ## Projects
-- **vllm-high-throughput-serving** — Served Qwen2.5-0.5B with vLLM on a Tesla T4
-  and load-tested it; throughput scaled ~24x (162 to 3,963 tokens/s) from 1 to 50
-  concurrent requests. Studied continuous batching and PagedAttention KV-cache.
-- **tiny-transformer-lm** *(final-year project)* — A GPT-style decoder-only
-  language model built from scratch in **Python** with PyTorch: custom BPE
-  tokenizer, causal multi-head attention, training loop and text generation,
-  plus an ablation study on multi-head attention.
-- **gpt2-imdb-sentiment** — Fine-tuned GPT-2 (124M) with a classification head on
-  IMDb reviews using the Hugging Face Trainer, reaching 86.8% eval accuracy, and
-  served it through a Gradio app.
-- **semantic-search-qdrant** — Meaning-based search with Sentence-Transformer
-  embeddings (all-MiniLM-L6-v2) and Qdrant, with metadata filtering and PDF chunk search.
-- **ml-pipeline-architect** — Gemini-powered app (React/TypeScript + FastAPI) that
-  turns a plain-English ML problem into a scikit-learn pipeline.
-- **metadata-forensics-lab** — Digital-forensics lab on reading, forging and
-  recovering metadata in DOCX, PDF and MP3 files with ExifTool.
+- **Cost Analytics Workbook — Powder Coating SME** (Pinnacle Enterprises, 2025):
+  integrated multi-sheet workbook modelling per-sq-m unit economics. Stack: Excel,
+  structured workbook design, unit-economics modelling.
+- **Multi-Business Accounting Automation:** Python file-handling scripts that
+  automate extraction and processing of invoice and bill documents across three
+  family-business accounting workflows. Stack: Python, file handling, document
+  parsing, openpyxl.
+- **Blockchain DApp — Decentralised User Registry:** Ethereum DApp storing user
+  data via Solidity smart contracts with a Web3.js frontend and IPFS storage.
+  Stack: Solidity, Web3.js, Ethereum, IPFS.
+- **Pinnacle Enterprises — Website Development & Deployment:** client-facing
+  website for a powder-coating SME (Honda Parts, TVS Motors, Sundaram Auto),
+  Formspree contact handling, deployed via Netlify with CI on push.
+  Stack: HTML/CSS, JavaScript, Netlify, Formspree.
+- **ML Specialization Capstone** *(final-year / capstone project, in progress, Q2 2026)*:
+  DeepLearning.AI Machine Learning Specialization capstone projects (supervised
+  learning, advanced algorithms, unsupervised learning + recommenders),
+  implemented in **Python** (Jupyter, scikit-learn).
 
-## Internships
-- **ML Engineering Intern — Northwind AI (sample):** Built RAG prototypes with
-  LangChain and Qdrant and optimised LLM inference throughput. (May–July 2024)
-- **Research Intern — Example Institute NLP Lab (sample):** Worked on transformer
-  interpretability and tokenization experiments. (Dec 2023–Feb 2024)
+## Final-year / capstone project language
+The final-year / capstone project (ML Specialization Capstone) is implemented in **Python** (Jupyter, scikit-learn).
 
-## Final-year project language
-The final-year project (tiny-transformer-lm) was implemented in **Python** using PyTorch.
+## Certifications
+- Google Machine Learning Crash Course — in progress (Q2 2026).
+- DeepLearning.AI Machine Learning Specialization (Coursera) — in progress (Q2 2026).
+
+## Languages
+English (Fluent), Hindi (Fluent), Marathi (Basic), French (Basic).
