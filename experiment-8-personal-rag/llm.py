@@ -42,8 +42,32 @@ _LABEL = {
 }
 
 
+def ollama_base_url() -> str:
+    return os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+
+
+_ollama_up_cache: Optional[bool] = None
+
+
+def ollama_running() -> bool:
+    """True if a local Ollama server answers (cached for the process)."""
+    global _ollama_up_cache
+    if _ollama_up_cache is None:
+        import urllib.request
+        try:
+            with urllib.request.urlopen(ollama_base_url() + "/api/tags", timeout=0.6):
+                _ollama_up_cache = True
+        except Exception:
+            _ollama_up_cache = False
+    return _ollama_up_cache
+
+
 def active_provider() -> str:
-    """Resolve which backend to use from LLM_PROVIDER / available keys."""
+    """Resolve which backend to use from LLM_PROVIDER / available keys / Ollama.
+
+    In ``auto`` mode we prefer an explicit API key, then a running local Ollama
+    server, else the offline responder. Set LLM_PROVIDER to force one.
+    """
     p = os.environ.get("LLM_PROVIDER", "auto").lower().strip()
     if p and p != "auto":
         return p
@@ -53,6 +77,8 @@ def active_provider() -> str:
         return "groq"
     if os.environ.get("GOOGLE_API_KEY"):
         return "gemini"
+    if ollama_running():
+        return "ollama"
     return "offline"
 
 
@@ -77,8 +103,9 @@ def build_chat_model() -> Tuple[Optional[object], str]:
         from langchain_ollama import ChatOllama
         return ChatOllama(
             model=model_name,
-            base_url=os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434"),
+            base_url=ollama_base_url(),
             num_predict=MAX_TOKENS,
+            temperature=0,
         ), provider
     if provider == "groq":
         from langchain_groq import ChatGroq

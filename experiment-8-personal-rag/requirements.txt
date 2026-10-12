@@ -13,11 +13,12 @@ chromadb>=0.5
 # through a thin adapter in embeddings.py.
 
 # LLM provider (answer generation) — pluggable via LLM_PROVIDER (see llm.py).
-# The offline extractive responder (default) needs none of these. Install only
-# the one you want to use:
-langchain-anthropic>=0.3     # LLM_PROVIDER=anthropic  (Claude)
-anthropic>=0.40
-# langchain-ollama>=0.2      # LLM_PROVIDER=ollama     (free, local, no key)
+# Ollama is the recommended free generator (local, no API key) and is auto-used
+# when a local Ollama server is running.
+langchain-ollama>=0.2        # LLM_PROVIDER=ollama     (free, local, no key)  [recommended]
+
+# Other backends — install only the one you want to use:
+# langchain-anthropic>=0.3   # LLM_PROVIDER=anthropic  (Claude)
 # langchain-groq>=0.2        # LLM_PROVIDER=groq       (free API tier)
 # langchain-google-genai>=2  # LLM_PROVIDER=gemini     (free API tier)
 

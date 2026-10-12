@@ -100,59 +100,62 @@ personal documents, deliberately spread across **all four required formats**:
 
 ## How to run
 
+### Recommended: with a free local LLM (Ollama)
+
+**Ollama** runs a real LLM on your own computer — 100% free, no API key, no
+sign-up. This is the recommended way to get proper LLM-generated answers.
+
 ```bash
-# 1. Install dependencies
+pip install -r requirements.txt           # installs langchain-ollama by default
+
+# Install Ollama once (free): https://ollama.com/download
+./run_with_ollama.sh                       # pulls llama3.2, ingests, and answers
+# or a single question:
+./run_with_ollama.sh "What is the student's CGPA?"
+```
+
+`run_with_ollama.sh` starts the Ollama server, pulls the model, builds the
+vector store and runs the app with `LLM_PROVIDER=ollama`. When an Ollama server
+is running, `python app.py` **auto-detects and uses it** — no env var needed.
+Change the model with `LLM_MODEL` (e.g. `LLM_MODEL=qwen2.5:3b`).
+
+### Plain run (no LLM needed)
+
+```bash
 pip install -r requirements.txt
-
-# 2. (Re)generate the knowledge-base documents from the resume  [optional]
-python build_knowledge_base.py
-
-# 3. Build the vector knowledge base (load → split → embed → store)
-python ingest.py
-
-# 4a. Ask the built-in sample questions
-python app.py
-
-# 4b. Ask one question
-python app.py "What is the student's CGPA?"
-
-# 4c. Interactive mode
-python app.py --interactive
+python build_knowledge_base.py   # (re)generate the documents from the resume  [optional]
+python ingest.py                 # load → split → embed → store
+python app.py                    # sample question set
+python app.py "What is the student's CGPA?"   # single question
+python app.py --interactive                   # interactive
 ```
 
-### Choosing the answer generator (pluggable LLM)
+With no LLM configured this uses the built-in **offline extractive responder**
+(no network, no API key), so the pipeline always runs end-to-end.
 
-With no configuration the system uses the built-in **offline extractive
-responder** — no network, no API key. To generate answers with a real LLM, set
-`LLM_PROVIDER`. All of these are free or have a free tier:
+### Other generators (pluggable)
+
+Set `LLM_PROVIDER` to use a different backend (all free or free-tier):
 
 ```bash
-# Ollama — 100% free, runs locally, NO API key (recommended for free use)
-#   install Ollama, then:  ollama pull llama3.2
-export LLM_PROVIDER=ollama
-python app.py
-
-# Groq — free API tier (key: console.groq.com)
-export LLM_PROVIDER=groq   GROQ_API_KEY=gsk_...
-python app.py
-
-# Google Gemini — free API tier (key: aistudio.google.com)
-export LLM_PROVIDER=gemini GOOGLE_API_KEY=...
-python app.py
-
-# Claude — needs ANTHROPIC_API_KEY (console.anthropic.com; free trial credit)
-export LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-...
-python app.py
+export LLM_PROVIDER=groq   GROQ_API_KEY=gsk_...   # console.groq.com
+export LLM_PROVIDER=gemini GOOGLE_API_KEY=...      # aistudio.google.com
+export LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-...   # console.anthropic.com
 ```
 
-Install only the integration you want (see `requirements.txt`), e.g.
-`pip install langchain-ollama`. Override the model for any provider with
-`LLM_MODEL`. Whichever generator is active, retrieval and the
-"answer-only-from-documents" guardrail are identical.
+Install only the integration you want (e.g. `pip install langchain-groq`).
+Whichever generator is active, retrieval and the "answer-only-from-documents"
+guardrail are identical.
 
 ---
 
 ## Walkthrough with screenshots
+
+> The screenshots below were captured with the **offline extractive responder**
+> (the environment they were produced in could not reach an LLM). Running
+> `./run_with_ollama.sh` on a machine with Ollama produces the same steps with
+> concise, LLM-written answers — the retrieval, sources and guardrail are
+> identical; only the wording of each answer changes.
 
 ### Step 1 — Generate the knowledge-base documents
 `build_knowledge_base.py` writes the seven personal documents across PDF, DOCX,
@@ -237,6 +240,7 @@ base (see screenshots above):
 | `llm.py` | Pluggable answer-generation backends (Ollama / Groq / Gemini / Claude) |
 | `rag.py` | Retrieval + relevance gate + answer generation |
 | `app.py` | CLI (sample set / single question / interactive) |
+| `run_with_ollama.sh` | One-command run with a free local Ollama LLM |
 | `config.py` | Chunking, retrieval and model settings |
 | `make_screenshots.py` | Renders the terminal screenshots from real runs |
 | `requirements.txt` | Dependencies |
