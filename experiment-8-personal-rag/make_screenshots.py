@@ -12,6 +12,7 @@ import html
 import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
@@ -20,8 +21,9 @@ BASE = Path(__file__).resolve().parent
 SHOTS = BASE / "screenshots"
 SHOTS.mkdir(exist_ok=True)
 
-PY = str(BASE.parent / ".ragvenv" / "bin" / "python")
-CHROME = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
+PY = sys.executable
+# Optional: point at a specific Chromium build; otherwise Playwright's own is used.
+CHROME = os.environ.get("CHROME_PATH") or None
 PROMPT = "ansondias@rag:~/experiment-8-personal-rag$"
 
 ENV = {
