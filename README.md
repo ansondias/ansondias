@@ -16,7 +16,9 @@ AI/ML engineer focused on **LLMs, NLP and retrieval**. I like building things fr
 | [**semantic-search-qdrant**](https://github.com/ansondias/semantic-search-qdrant) | Meaning-based search with Sentence-Transformer embeddings (`all-MiniLM-L6-v2`) and Qdrant, with metadata filtering and PDF chunk search. |
 | [**ml-pipeline-architect**](https://github.com/ansondias/ml-pipeline-architect) | Experimental Gemini-powered app (React/TypeScript + FastAPI) that turns a plain-English ML problem into a scikit-learn pipeline. |
 
-**Also:** [metadata-forensics-lab](https://github.com/ansondias/metadata-forensics-lab), a digital-forensics lab on reading, forging and recovering metadata in DOCX, PDF and MP3 files with ExifTool.
+**Also:**
+- [metadata-forensics-lab](https://github.com/ansondias/metadata-forensics-lab), a digital-forensics lab on reading, forging and recovering metadata in DOCX, PDF and MP3 files with ExifTool.
+- [mobilenetv2-edge-deployment-lab](https://github.com/ansondias/mobilenetv2-edge-deployment-lab), an edge-deployment lab that converts MobileNetV2 to a full-integer INT8 TFLite model and runs it on a simulated 256 MB, single-core device. INT8 ran 1.4–1.6× faster with ~2.6× less model memory than FP32, for under 1 pp of top-1 at 224 and 160 px.
 
 ---
 
