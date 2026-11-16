@@ -1,0 +1,20 @@
+\section{Experimental Setup}
+\textbf{Task and model.} CIFAR-10~\cite{krizhevsky2009} (50k train, 10k test, per-channel normalisation, no augmentation) is split over $N=30$ clients by a class-wise Dirichlet partition with concentration 0.5~\cite{hsu2019}. The model is a CNN without normalisation layers (conv16--pool--conv32--pool--fc256--fc10, $d=532{,}202$).
+
+\textbf{Training.} $R=150$ rounds of \eqref{eq:ef}; every uploading client runs $\tau=10$ SGD steps with batch size 32 and step size 0.1. The step size was chosen from $\{0.02,0.05,0.1,0.2\}$ in 20-round pilots of dense FedAvg with unlimited batteries and was not tuned per policy.
+
+\textbf{Batteries.} Each phone has a 4000~mAh, 3.85~V battery (55.44~kJ) at a state of charge drawn from $U[0.05,1]$, and FL may spend 10\% of the charge present. So $b_i\in[0.28,5.54]$~kJ and $\Bbar_i\in[1.85,36.96]$~J per round. About a third of the clients fall below the cliff $\Ez=12.59$~J, a third between $\Ez$ and the dense cost $E(d)=23.94$~J, and a third above it.
+
+\textbf{Arms.} All arms are charged the full model \eqref{eq:energy}.
+\begin{itemize}
+\item \emph{Fixed} $k/d\in\{0.01,0.1,1\}$: upload every round until the battery cannot pay (the baseline).
+\item \emph{EA tail-blind}: token bucket, but $k$ is chosen with the bytes-only model ($\Ez=0$).
+\item \emph{EA per-round}: \eqref{eq:p1} solved literally on the ledger, $k=\ko(A_i)$, uploading as soon as any $k\ge1$ is affordable.
+\item \emph{EA dense-or-silent}: Algorithm~\ref{alg:mvt} with $\kst=d$ (Corollary~\ref{cor:tail}b).
+\item \emph{EA-MVT}: Algorithm~\ref{alg:mvt} (proposed).
+\item \emph{EA-MVT-cap}: Algorithm~\ref{alg:mvt} with line~7 replaced by $k\gets\kst_i$, so surplus allowance stays unspent. This arm was added \emph{after} seeing the results of the others (Section~\ref{sec:results}).
+\end{itemize}
+
+\textbf{Metrics.} (i) Test accuracy at a fixed fleet energy budget and at round $R$. (ii) Clients \emph{surviving} to round $R$: those that upload at least once in the last 15 rounds. (iii) Fairness: the contribution of client $i$ is $c_i=\sum_r\delta_i^r$, the contraction it delivered; we report Jain's index~\cite{jain1984} of $c$ and the share of $\sum_i c_i$ from the lowest battery tercile.
+
+\textbf{Protocol.} Three seeds. A seed fixes the partition, the batteries, the initial model and every minibatch, and is shared by all arms, so arms differ only in policy. We report mean $\pm$ sample standard deviation. Three further arms with unlimited batteries (fixed $k/d$) measure rounds-to-accuracy. Everything runs on four CPU cores.
