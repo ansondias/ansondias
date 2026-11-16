@@ -25,6 +25,8 @@ OUTBOX = Path(tempfile.mkdtemp(prefix="lab10-outbox-"))
 os.environ["LAB10_OUTBOX"] = str(OUTBOX)  # must be set before tools is imported
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from google.genai import types  # noqa: E402
+
 import agents  # noqa: E402
 import main  # noqa: E402
 import tools  # noqa: E402
@@ -33,27 +35,43 @@ TASK = main.DEFAULT_TASK
 
 
 # --------------------------------------------------------------------------
-# A scripted stand-in for the Claude client
+# A scripted stand-in for the Gemini client
 # --------------------------------------------------------------------------
 
 
+def reply(*parts, finish_reason=types.FinishReason.STOP):
+    """A model response built from the SDK's own types, as the real API returns it."""
+    content = types.Content(role="model", parts=list(parts))
+    return types.GenerateContentResponse(
+        candidates=[types.Candidate(content=content, finish_reason=finish_reason)]
+    )
+
+
 def text(value):
-    return SimpleNamespace(content=[SimpleNamespace(type="text", text=value)], stop_reason="end_turn")
+    return reply(types.Part(text=value))
 
 
 def call(tool_name, /, **arguments):
-    block = SimpleNamespace(
-        type="tool_use", id=f"toolu_{tool_name}", name=tool_name, input=arguments
-    )
-    return SimpleNamespace(content=[block], stop_reason="tool_use")
+    function_call = types.FunctionCall(id=f"call_{tool_name}", name=tool_name, args=arguments)
+    return reply(types.Part(function_call=function_call))
 
 
-def tool_results(messages):
-    """Every tool result the agent has received so far, in order."""
+def task_text(contents):
+    """The task the agent was given: the text of the first user turn."""
+    return contents[0].parts[0].text
+
+
+def tool_results(contents):
+    """Every function response the agent has sent back to the model so far, in order."""
     results = []
-    for message in messages:
-        if message["role"] == "user" and isinstance(message["content"], list):
-            results.extend(message["content"])
+    for content in contents:
+        for part in content.parts:
+            if part.function_response:
+                response = part.function_response.response
+                is_error = "error" in response
+                results.append(
+                    {"content": response["error" if is_error else "result"], "is_error": is_error}
+                )
     return results
 
 
@@ -75,7 +93,7 @@ def researcher_script(messages):
 
 
 def writer_script(messages):
-    findings = messages[0]["content"].split("Research findings from the Researcher:\n")[1]
+    findings = task_text(messages).split("Research findings from the Researcher:\n")[1]
     summary = "Summary of the company leave policy:\n" + findings
     if not tool_results(messages):
         return call("count_words", text=summary)
@@ -83,7 +101,7 @@ def writer_script(messages):
 
 
 def emailer_script(messages):
-    request = messages[0]["content"]
+    request = task_text(messages)
     results = tool_results(messages)
     if not results:
         name = request.split("Recipient name: ")[1].splitlines()[0]
@@ -110,7 +128,7 @@ def supervisor_script(messages, tamper=False):
     summary = results[1]["content"]
     if len(results) == 2 and tamper:  # try to send text the Writer never produced
         summary += "\nAlso, everyone gets Fridays off."
-    if results[-1].get("is_error") or len(results) == 2:
+    if results[-1]["is_error"] or len(results) == 2:
         return call(
             "delegate_to_emailer",
             recipient_name="Kunal",
@@ -121,7 +139,7 @@ def supervisor_script(messages, tamper=False):
 
 
 class ScriptedClient:
-    """Mimics `client.beta.messages.create` and records every request."""
+    """Mimics `client.models.generate_content` and records every request."""
 
     def __init__(self, tamper=False):
         self.requests = []
@@ -131,19 +149,17 @@ class ScriptedClient:
             agents.EMAILER_PROMPT: emailer_script,
             agents.SUPERVISOR_PROMPT: lambda messages: supervisor_script(messages, tamper),
         }
-        self.beta = SimpleNamespace(messages=SimpleNamespace(create=self.create))
+        self.models = SimpleNamespace(generate_content=self.generate_content)
 
-    def create(self, **request):
-        self.requests.append(request)
-        return self.scripts[request["system"]](request["messages"])
+    def generate_content(self, *, model, contents, config):
+        offered = {d.name for tool in config.tools for d in tool.function_declarations}
+        self.requests.append(
+            {"system": config.system_instruction, "tools": offered, "messages": contents}
+        )
+        return self.scripts[config.system_instruction](contents)
 
     def tools_offered(self, system_prompt):
-        return {
-            tool["name"]
-            for request in self.requests
-            if request["system"] == system_prompt
-            for tool in request["tools"]
-        }
+        return set().union(*(r["tools"] for r in self.requests if r["system"] == system_prompt))
 
 
 def emails_in_outbox():
@@ -195,8 +211,8 @@ class PipelineTest(unittest.TestCase):
         writer_output = tool_results(client.requests[-1]["messages"])[1]["content"]
         writer_input = next(r for r in client.requests if r["system"] == agents.WRITER_PROMPT)
         emailer_input = next(r for r in client.requests if r["system"] == agents.EMAILER_PROMPT)
-        self.assertIn(researcher_output, writer_input["messages"][0]["content"])
-        self.assertIn(writer_output, emailer_input["messages"][0]["content"])
+        self.assertIn(researcher_output, task_text(writer_input["messages"]))
+        self.assertIn(writer_output, task_text(emailer_input["messages"]))
 
     def test_each_agent_is_offered_only_its_own_tools(self):
         client, _ = self.run_pipeline(tools.LocalToolbox())
@@ -229,48 +245,74 @@ class PipelineTest(unittest.TestCase):
 
 class AgentLoopTest(unittest.TestCase):
     def make_agent(self, responses, tool_names, **options):
-        client = SimpleNamespace(
-            beta=SimpleNamespace(messages=SimpleNamespace(create=lambda **_: responses.pop(0)))
-        )
-        toolbox = tools.LocalToolbox()
-        return agents.Agent("Tester", "prompt", toolbox.get(tool_names), client, agents.Trace(echo=False), **options)
-
-    def test_tool_outside_the_allowlist_is_refused(self):
         seen = []
 
-        def create(**request):
-            seen.append(request["messages"])
-            if len(seen) == 1:
-                return call("send_email", to="kunal.meher@example.com", subject="s", body="b")
-            return text("ok")
+        def generate_content(*, model, contents, config):
+            seen.append(list(contents))
+            return responses.pop(0)
 
-        client = SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=create)))
-        researcher_tools = tools.LocalToolbox().get(["search_knowledge_base"])
-        agent = agents.Agent("Researcher", "prompt", researcher_tools, client, agents.Trace(echo=False))
+        client = SimpleNamespace(models=SimpleNamespace(generate_content=generate_content))
+        agent = agents.Agent(
+            "Tester",
+            "prompt",
+            tools.LocalToolbox().get(tool_names),
+            client,
+            agents.Trace(echo=False),
+            **options,
+        )
+        return agent, seen
+
+    def test_tool_outside_the_allowlist_is_refused(self):
+        responses = [
+            call("send_email", to="kunal.meher@example.com", subject="s", body="b"),
+            text("ok"),
+        ]
+        agent, seen = self.make_agent(responses, ["search_knowledge_base"])
 
         self.assertEqual(agent.run("email this"), "ok")
-        result = seen[1][2]["content"][0]  # the tool_result sent back to the model
+        (result,) = tool_results(seen[1])  # what the model was told about its call
         self.assertTrue(result["is_error"])
         self.assertIn("no tool named 'send_email'", result["content"])
         self.assertEqual(emails_in_outbox(), [])
 
     def test_runaway_agent_is_stopped(self):
         responses = [call("count_words", text="a b") for _ in range(5)]
-        agent = self.make_agent(responses, ["count_words"], max_turns=3)
+        agent, _ = self.make_agent(responses, ["count_words"], max_turns=3)
         with self.assertRaises(agents.AgentError):
             agent.run("loop forever")
 
     def test_bad_tool_arguments_are_reported_to_the_model(self):
         responses = [call("count_words", words="a b"), text("ok")]
-        agent = self.make_agent(responses, ["count_words"])
+        agent, seen = self.make_agent(responses, ["count_words"])
         self.assertEqual(agent.run("count"), "ok")
-        self.assertIn("bad arguments for count_words", "\n".join(agent.trace.lines))
+        (result,) = tool_results(seen[1])
+        self.assertTrue(result["is_error"])
+        self.assertIn("bad arguments for count_words", result["content"])
 
-    def test_refusal_or_truncation_raises(self):
-        refusal = SimpleNamespace(content=[], stop_reason="refusal")
-        agent = self.make_agent([refusal], ["count_words"])
-        with self.assertRaises(agents.AgentError):
-            agent.run("anything")
+    def test_model_turn_is_sent_back_unchanged_and_thoughts_stay_out_of_the_answer(self):
+        thought = types.Part(text="I should count first.", thought=True)
+        signed_call = types.Part(
+            function_call=types.FunctionCall(name="count_words", args={"text": "a b"}),
+            thought_signature=b"signature",
+        )
+        responses = [reply(thought, signed_call), reply(thought, types.Part(text="Two words."))]
+        agent, seen = self.make_agent(responses, ["count_words"])
+
+        self.assertEqual(agent.run("count"), "Two words.")
+        model_turn = seen[1][1]
+        self.assertEqual(model_turn.parts, [thought, signed_call])
+        self.assertEqual(tool_results(seen[1]), [{"content": "2", "is_error": False}])
+        self.assertIn("I should count first.", "\n".join(agent.trace.lines))
+
+    def test_blocked_or_truncated_response_raises(self):
+        blocked = types.GenerateContentResponse(
+            candidates=[types.Candidate(content=None, finish_reason=types.FinishReason.SAFETY)]
+        )
+        truncated = reply(types.Part(text="Half a sen"), finish_reason=types.FinishReason.MAX_TOKENS)
+        for response in (blocked, truncated, types.GenerateContentResponse(candidates=[])):
+            agent, _ = self.make_agent([response], ["count_words"])
+            with self.assertRaises(agents.AgentError):
+                agent.run("anything")
 
 
 class ToolTest(unittest.TestCase):

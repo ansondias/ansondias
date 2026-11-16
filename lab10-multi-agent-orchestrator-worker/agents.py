@@ -20,20 +20,11 @@ import json
 from contextlib import contextmanager
 from typing import Any
 
+from google.genai import types
+
 from tools import Tool, ToolError
 
-DEFAULT_MODEL = "claude-opus-5-5"
-
-# If a safety classifier declines a request, the API can re-run it on another
-# model inside the same call. Only these models accept the parameter.
-REFUSAL_FALLBACK_BETA = "server-side-fallback-2026-07-01"
-MODELS_WITH_REFUSAL_FALLBACK = {
-    "claude-opus-5-5",
-    "claude-opus-5",
-    "claude-sonnet-5-5",
-    "claude-fable-5-2",
-    "claude-fable-5-1",
-}
+DEFAULT_MODEL = "gemini-3.8-flash"
 
 
 class AgentError(RuntimeError):
@@ -105,72 +96,76 @@ class Agent:
         client: Any,
         trace: Trace,
         model: str = DEFAULT_MODEL,
-        effort: str = "low",
         max_turns: int = 12,
         show_tool_io: bool = True,
     ) -> None:
         self.name = name
-        self.system_prompt = system_prompt
         self.tools = {tool.name: tool for tool in tools}
         self.client = client
         self.trace = trace
         self.model = model
-        self.effort = effort
         self.max_turns = max_turns
         self.show_tool_io = show_tool_io
+        self.config = types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            tools=[
+                types.Tool(
+                    function_declarations=[
+                        types.FunctionDeclaration(
+                            name=tool.name,
+                            description=tool.description,
+                            parameters_json_schema=tool.input_schema,
+                        )
+                        for tool in tools
+                    ]
+                )
+            ],
+            # This class runs the tool loop itself, so the SDK must not.
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            thinking_config=types.ThinkingConfig(include_thoughts=True),
+        )
 
     def run(self, task: str) -> str:
         """Work on `task` until the LLM stops calling tools; return its final text."""
         tag = f"[{self.name.upper()}]"
-        messages: list[dict[str, Any]] = [{"role": "user", "content": task}]
+        contents = [types.Content(role="user", parts=[types.Part(text=task)])]
 
         for _ in range(self.max_turns):
-            response = self._call_llm(messages)
+            response = self.client.models.generate_content(
+                model=self.model, contents=contents, config=self.config
+            )
+            candidate = response.candidates[0] if response.candidates else None
+            if candidate is None or candidate.content is None or not candidate.content.parts:
+                reason = candidate.finish_reason if candidate else response.prompt_feedback
+                raise AgentError(f"{self.name} got an empty response from the model ({reason})")
+            parts = candidate.content.parts
 
-            for block in response.content:
-                if block.type == "thinking" and block.thinking:
+            for part in parts:
+                if part.thought and part.text:
                     self.trace.log(f"{tag} reasoning:")
-                    self.trace.block(block.thinking.strip())
+                    self.trace.block(part.text.strip())
 
-            # The whole assistant turn goes back unchanged, thinking blocks included.
-            messages.append({"role": "assistant", "content": response.content})
+            # The model's turn goes back unchanged, thought signatures included.
+            contents.append(candidate.content)
 
-            if response.stop_reason == "end_turn":
-                answer = "\n".join(b.text for b in response.content if b.type == "text").strip()
-                return answer or "(no output)"
-            if response.stop_reason == "pause_turn":
+            calls = [part.function_call for part in parts if part.function_call]
+            if calls:
+                results = [self._run_tool(tag, call) for call in calls]
+                contents.append(types.Content(role="user", parts=results))
                 continue
-            if response.stop_reason != "tool_use":
-                raise AgentError(f"{self.name} stopped early (stop_reason={response.stop_reason})")
 
-            results = []
-            for block in response.content:
-                if block.type == "tool_use":
-                    results.append(self._run_tool(tag, block))
-            messages.append({"role": "user", "content": results})
+            if candidate.finish_reason not in (None, types.FinishReason.STOP):
+                raise AgentError(f"{self.name} stopped early ({candidate.finish_reason})")
+            answer = "\n".join(p.text for p in parts if p.text and not p.thought).strip()
+            return answer or "(no output)"
 
         raise AgentError(f"{self.name} did not finish within {self.max_turns} turns")
 
-    def _call_llm(self, messages: list[dict[str, Any]]) -> Any:
-        request: dict[str, Any] = {
-            "model": self.model,
-            "max_tokens": 16000,
-            "system": self.system_prompt,
-            "tools": [tool.definition() for tool in self.tools.values()],
-            "messages": messages,
-            "thinking": {"type": "adaptive", "display": "summarized"},
-            "output_config": {"effort": self.effort},
-        }
-        if self.model in MODELS_WITH_REFUSAL_FALLBACK:
-            request["betas"] = [REFUSAL_FALLBACK_BETA]
-            request["fallbacks"] = "default"
-        return self.client.beta.messages.create(**request)
-
-    def _run_tool(self, tag: str, call: Any) -> dict[str, Any]:
-        """Execute one tool call and package the outcome as a tool_result block."""
+    def _run_tool(self, tag: str, call: types.FunctionCall) -> types.Part:
+        """Execute one function call and package the outcome as a function response."""
+        arguments = dict(call.args or {})
         if self.show_tool_io:
-            arguments = json.dumps(call.input, ensure_ascii=False)
-            self.trace.log(f"{tag} calls {call.name}({arguments})")
+            self.trace.log(f"{tag} calls {call.name}({json.dumps(arguments, ensure_ascii=False)})")
         else:
             self.trace.log(f"{tag} calls {call.name}")
         tool = self.tools.get(call.name)
@@ -178,22 +173,23 @@ class Agent:
             if tool is None:
                 raise ToolError(f"{self.name} has no tool named {call.name!r}.")
             try:
-                inspect.signature(tool.handler).bind(**call.input)
+                inspect.signature(tool.handler).bind(**arguments)
             except TypeError as error:  # the LLM sent arguments the tool does not take
                 raise ToolError(f"bad arguments for {call.name}: {error}") from None
-            output, failed = tool.handler(**call.input), False
+            output, failed = tool.handler(**arguments), False
         except ToolError as error:
             output, failed = f"Error: {error}", True
 
         if failed or self.show_tool_io:
             self.trace.log(f"{tag} {call.name} returned:")
             self.trace.block(_preview(output))
-        return {
-            "type": "tool_result",
-            "tool_use_id": call.id,
-            "content": output,
-            "is_error": failed,
-        }
+        return types.Part(
+            function_response=types.FunctionResponse(
+                id=call.id,
+                name=call.name,
+                response={"error": output} if failed else {"result": output},
+            )
+        )
 
 
 # --------------------------------------------------------------------------
@@ -410,6 +406,5 @@ def build_supervisor(client: Any, toolbox: Any, trace: Trace, model: str = DEFAU
         client,
         trace,
         model,
-        effort="medium",
         show_tool_io=False,  # each hand-off is already printed in full by delegate()
     )

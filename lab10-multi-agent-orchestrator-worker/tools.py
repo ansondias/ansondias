@@ -51,14 +51,6 @@ class Tool:
     input_schema: dict[str, Any]
     handler: Callable[..., str]
 
-    def definition(self) -> dict[str, Any]:
-        """The tool definition sent to the Claude API."""
-        return {
-            "name": self.name,
-            "description": self.description,
-            "input_schema": self.input_schema,
-        }
-
 
 # --------------------------------------------------------------------------
 # Knowledge base search

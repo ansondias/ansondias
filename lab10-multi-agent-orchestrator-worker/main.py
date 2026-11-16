@@ -16,7 +16,8 @@ import sys
 from email import message_from_bytes, policy
 from pathlib import Path
 
-import anthropic
+from google import genai
+from google.genai import errors, types
 
 from agents import DEFAULT_MODEL, AgentError, Trace, build_supervisor
 from tools import BASE_DIR, OUTBOX_DIR, LocalToolbox
@@ -57,6 +58,17 @@ def run(task: str, client, toolbox, trace: Trace, model: str = DEFAULT_MODEL) ->
     return report
 
 
+def make_client() -> genai.Client:
+    """A Gemini client that waits out free-tier rate limits (HTTP 429) and retries."""
+    retry = types.HttpRetryOptions(
+        attempts=6,
+        initial_delay=5.0,
+        max_delay=60.0,
+        http_status_codes=[408, 429, 500, 502, 503, 504],
+    )
+    return genai.Client(http_options=types.HttpOptions(retry_options=retry))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("task", nargs="?", default=DEFAULT_TASK, help="the task for the Supervisor")
@@ -64,7 +76,12 @@ def main() -> int:
     parser.add_argument(
         "--model",
         default=os.environ.get("LAB10_MODEL", DEFAULT_MODEL),
-        help=f"Claude model for all four agents (default: {DEFAULT_MODEL})",
+        help=f"Gemini model for all four agents (default: {DEFAULT_MODEL})",
+    )
+    parser.add_argument(
+        "--list-models",
+        action="store_true",
+        help="list the Gemini models your API key can use, then exit",
     )
     parser.add_argument(
         "--output",
@@ -73,6 +90,21 @@ def main() -> int:
         help="where to save the transcript",
     )
     args = parser.parse_args()
+
+    try:
+        client = make_client()
+    except ValueError:
+        print(
+            "ERROR: no API key found. Create a free key at https://aistudio.google.com/apikey "
+            "and set it as GEMINI_API_KEY.",
+            file=sys.stderr,
+        )
+        return 1
+    if args.list_models:
+        for model in client.models.list():
+            if "generateContent" in (model.supported_actions or []):
+                print(model.name.removeprefix("models/"))
+        return 0
 
     trace = Trace()
     trace.log("Experiment 10: Multi-Agent System (Orchestrator-Worker pattern)")
@@ -88,20 +120,15 @@ def main() -> int:
 
     error_message = None
     try:
-        client = anthropic.Anthropic()
         run(args.task, client, toolbox, trace, args.model)
-    except anthropic.AuthenticationError:
-        error_message = "the API rejected the credentials. Check ANTHROPIC_API_KEY."
-    except anthropic.RateLimitError:
-        error_message = "rate limited by the API. Wait a minute and run again."
-    except anthropic.APIStatusError as error:
-        error_message = f"the API returned {error.status_code}: {error.message}"
-    except anthropic.APIConnectionError:
-        error_message = "could not reach the API. Check the network connection."
-    except TypeError as error:
-        if "authentication method" not in str(error):
-            raise
-        error_message = "no API credentials found. Set ANTHROPIC_API_KEY and run again."
+    except errors.ClientError as error:
+        error_message = f"the Gemini API returned {error.code} {error.status}: {error.message}"
+        if error.code == 404:
+            error_message += "\nRun `python main.py --list-models` and pick one with --model."
+        elif error.code == 429:
+            error_message += "\nThat is a rate or quota limit. Wait, or try another model with --model."
+    except errors.APIError as error:
+        error_message = f"the Gemini API returned {error.code} {error.status}: {error.message}"
     except AgentError as error:
         error_message = str(error)
     finally:

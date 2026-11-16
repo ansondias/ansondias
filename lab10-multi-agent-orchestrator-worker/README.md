@@ -53,14 +53,14 @@ A call to a tool outside an agent's allowlist is refused by the loop and reporte
 
 ## Running it
 
-It needs Python 3.10+ and an Anthropic API key. Expect about a dozen model calls per run.
+It needs Python 3.10+ and a Gemini API key, which you can create for free in [Google AI Studio](https://aistudio.google.com/apikey). The agents use Google's `google-genai` SDK. Expect about a dozen model calls per run; if the free tier's per-minute limit is hit, the client waits and retries by itself.
 
 ```bash
 pip install -r requirements.txt
 ```
 
 ```bash
-export ANTHROPIC_API_KEY=your-key
+export GEMINI_API_KEY=your-key
 ```
 
 ```bash
@@ -86,10 +86,14 @@ python main.py "Find out how sick leave works and email a short summary to Asha.
 ```
 
 ```bash
-python main.py --model claude-haiku-5-5
+python main.py --model gemini-flash-latest
 ```
 
-`--mcp` starts `mcp_server.py` as a subprocess and routes every tool call through it over stdio; the agents and their allowlists are unchanged. `--model` (or the `LAB10_MODEL` environment variable) picks the Claude model for all four agents; the default is `claude-opus-5-5`.
+`--mcp` starts `mcp_server.py` as a subprocess and routes every tool call through it over stdio; the agents and their allowlists are unchanged. `--model` (or the `LAB10_MODEL` environment variable) picks the Gemini model for all four agents; the default is `gemini-3.8-flash`. If your key cannot use that model, list the ones it can and pick one:
+
+```bash
+python main.py --list-models
+```
 
 ## Tests
 
