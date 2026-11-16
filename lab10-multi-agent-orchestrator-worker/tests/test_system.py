@@ -81,8 +81,8 @@ SEARCH_HIT = re.compile(r"^\d+\. \[(.+?)\] \(score [\d.]+\) (.+)$", re.MULTILINE
 def researcher_script(messages):
     results = tool_results(messages)
     queries = ["leave policy", "sick leave", "carry forward unused leave", "leave request"]
-    if len(results) < len(queries):
-        return call("search_knowledge_base", query=queries[len(results)], top_k=8)
+    if not results:
+        return call("search_knowledge_base", queries=queries, top_k=8)
     facts = []
     for result in results:
         for source, passage in SEARCH_HIT.findall(result["content"]):
@@ -321,15 +321,19 @@ class ToolTest(unittest.TestCase):
             path.unlink()
 
     def test_search_ranks_the_right_document_first(self):
-        source, passage = SEARCH_HIT.findall(tools.search_knowledge_base("sick leave certificate"))[0]
+        output = tools.search_knowledge_base(["sick leave certificate", "probation period"])
+        sick_leave, probation = output.split("\n\n")
+
+        self.assertTrue(sick_leave.startswith('Query: "sick leave certificate"'))
+        source, passage = SEARCH_HIT.findall(sick_leave)[0]
         self.assertEqual(source, "employee_leave_policy.pdf")
         self.assertIn("medical certificate", passage)
 
-        source, _ = SEARCH_HIT.findall(tools.search_knowledge_base("probation period"))[0]
+        source, _ = SEARCH_HIT.findall(probation)[0]
         self.assertEqual(source, "new_employee_onboarding_guide.pdf")
 
     def test_search_with_no_match_says_so(self):
-        self.assertIn("No passages matched", tools.search_knowledge_base("xylophone"))
+        self.assertIn("No passages matched", tools.search_knowledge_base(["xylophone"]))
 
     def test_contact_lookup(self):
         (contact,) = json.loads(tools.lookup_contact("kunal"))

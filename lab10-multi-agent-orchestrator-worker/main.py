@@ -43,6 +43,9 @@ def run(task: str, client, toolbox, trace: Trace, model: str = DEFAULT_MODEL) ->
     for d in trace.delegations:
         trace.log(f"{d['step']}. {d['from']} -> {d['to']:<10} passed: {d['passed']}")
 
+    calls = ", ".join(f"{name} {count}" for name, count in trace.model_calls.items())
+    trace.log(f"Model calls: {calls} (total {sum(trace.model_calls.values())})")
+
     trace.heading("MOCK OUTBOX (emails written by this run; nothing was really sent)")
     sent = sorted(set(OUTBOX_DIR.glob("*.eml")) - already_in_outbox)
     for path in sent:
@@ -59,14 +62,15 @@ def run(task: str, client, toolbox, trace: Trace, model: str = DEFAULT_MODEL) ->
 
 
 def make_client() -> genai.Client:
-    """A Gemini client that waits out free-tier rate limits (HTTP 429) and retries."""
+    """A Gemini client that retries for about a minute on rate limits and overload."""
     retry = types.HttpRetryOptions(
-        attempts=6,
-        initial_delay=5.0,
-        max_delay=60.0,
+        attempts=5,
+        initial_delay=4.0,
+        max_delay=30.0,
         http_status_codes=[408, 429, 500, 502, 503, 504],
     )
-    return genai.Client(http_options=types.HttpOptions(retry_options=retry))
+    # timeout is in milliseconds; without one an overloaded model can hang a run
+    return genai.Client(http_options=types.HttpOptions(timeout=120_000, retry_options=retry))
 
 
 def main() -> int:

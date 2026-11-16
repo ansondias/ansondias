@@ -41,6 +41,7 @@ class Trace:
         self.echo = echo
         self.lines: list[str] = []
         self.delegations: list[dict[str, Any]] = []
+        self.model_calls: dict[str, int] = {}
         self._depth = 0
 
     def log(self, text: str = "") -> None:
@@ -76,7 +77,7 @@ class Trace:
         return step
 
 
-def _preview(text: str, limit: int = 900) -> str:
+def _preview(text: str, limit: int = 4000) -> str:
     return text if len(text) <= limit else f"{text[:limit]} ... [{len(text) - limit} more characters]"
 
 
@@ -98,6 +99,7 @@ class Agent:
         model: str = DEFAULT_MODEL,
         max_turns: int = 12,
         show_tool_io: bool = True,
+        show_reasoning: bool = False,
     ) -> None:
         self.name = name
         self.tools = {tool.name: tool for tool in tools}
@@ -122,7 +124,7 @@ class Agent:
             ],
             # This class runs the tool loop itself, so the SDK must not.
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
-            thinking_config=types.ThinkingConfig(include_thoughts=True),
+            thinking_config=types.ThinkingConfig(include_thoughts=show_reasoning),
         )
 
     def run(self, task: str) -> str:
@@ -134,6 +136,7 @@ class Agent:
             response = self.client.models.generate_content(
                 model=self.model, contents=contents, config=self.config
             )
+            self.trace.model_calls[self.name] = self.trace.model_calls.get(self.name, 0) + 1
             candidate = response.candidates[0] if response.candidates else None
             if candidate is None or candidate.content is None or not candidate.content.parts:
                 reason = candidate.finish_reason if candidate else response.prompt_feedback
@@ -201,10 +204,11 @@ You are the Researcher in a small team of AI agents coordinated by a Supervisor.
 Your one job is to find information in the company knowledge base and report what it says.
 
 Use search_knowledge_base to gather the passages relevant to the research task. The search \
-is keyword-based and returns single sentences, so run several focused queries, covering \
-different aspects and wordings of the topic, until further searches stop turning up new \
-relevant passages. The knowledge base also holds documents on other topics; leave out \
-anything that is not about the topic you were asked to research.
+is keyword-based and returns single sentences, so give it several focused queries in one \
+call, covering the different aspects and wordings of the topic. One call is normally \
+enough; make a second only if the first leaves a clear gap. The knowledge base also holds \
+documents on other topics; leave out anything that is not about the topic you were asked \
+to research.
 
 Report your findings as a list of facts. Quote or closely paraphrase each one from a \
 passage and put its source file in brackets after it. Include every relevant detail \
@@ -406,5 +410,6 @@ def build_supervisor(client: Any, toolbox: Any, trace: Trace, model: str = DEFAU
         client,
         trace,
         model,
+        show_reasoning=True,  # how it splits the task and decides it is done
         show_tool_io=False,  # each hand-off is already printed in full by delegate()
     )

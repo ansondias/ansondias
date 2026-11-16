@@ -36,9 +36,9 @@ def reported_to_client():
 
 
 @server.tool(description=tools.DESCRIPTIONS["search_knowledge_base"])
-def search_knowledge_base(query: str, top_k: int = 5) -> str:
+def search_knowledge_base(queries: list[str], top_k: int = 5) -> str:
     with reported_to_client():
-        return tools.search_knowledge_base(query, top_k)
+        return tools.search_knowledge_base(queries, top_k)
 
 
 @server.tool(description=tools.DESCRIPTIONS["lookup_contact"])

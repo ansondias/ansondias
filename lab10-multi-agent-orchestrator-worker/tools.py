@@ -110,17 +110,24 @@ class KnowledgeBase:
 _kb: KnowledgeBase | None = None
 
 
-def search_knowledge_base(query: str, top_k: int = 5) -> str:
+def search_knowledge_base(queries: list[str], top_k: int = 5) -> str:
+    """Run every query and return the ranked passages for each, in one call."""
     global _kb
     if _kb is None:
         _kb = KnowledgeBase()
-    hits = _kb.search(query, max(1, min(int(top_k), 10)))
-    if not hits:
-        return f"No passages matched {query!r}. Try different keywords."
-    return "\n".join(
-        f"{rank}. [{hit['source']}] (score {hit['score']}) {hit['text']}"
-        for rank, hit in enumerate(hits, start=1)
-    )
+    if isinstance(queries, str):
+        queries = [queries]
+    if not queries:
+        raise ToolError("Give at least one query.")
+    sections = []
+    for query in queries:
+        hits = _kb.search(query, max(1, min(int(top_k), 10)))
+        lines = [
+            f"{rank}. [{hit['source']}] (score {hit['score']}) {hit['text']}"
+            for rank, hit in enumerate(hits, start=1)
+        ] or ["No passages matched. Try different keywords."]
+        sections.append(f'Query: "{query}"\n' + "\n".join(lines))
+    return "\n\n".join(sections)
 
 
 # --------------------------------------------------------------------------
@@ -194,9 +201,10 @@ def count_words(text: str) -> str:
 
 DESCRIPTIONS = {
     "search_knowledge_base": (
-        "Search the company knowledge base (HR policy documents) and return the most "
-        "relevant passages, one per line, each with its source file and a relevance score. "
-        "Run several focused queries to cover a topic fully."
+        "Search the company knowledge base (HR policy documents). Takes a list of keyword "
+        "queries and returns, for each query, the most relevant passages with their source "
+        "file and a relevance score. Put several focused queries in one call to cover a "
+        "topic fully."
     ),
     "lookup_contact": (
         "Look up a person in the company contact directory by full or partial name. "
@@ -216,10 +224,17 @@ ALL_TOOLS: dict[str, Tool] = {
         input_schema={
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Keywords to search for."},
-                "top_k": {"type": "integer", "description": "Passages to return (default 5, max 10)."},
+                "queries": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "One or more keyword queries, all run in this one call.",
+                },
+                "top_k": {
+                    "type": "integer",
+                    "description": "Passages to return per query (default 5, max 10).",
+                },
             },
-            "required": ["query"],
+            "required": ["queries"],
         },
         handler=search_knowledge_base,
     ),
