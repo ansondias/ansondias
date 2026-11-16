@@ -26,7 +26,8 @@ BUDGETS_KJ = [20.0, 40.0, 60.0]
 LAST = 15            # "surviving to round R" = uploads at least once in the last LAST rounds
 TARGETS = [0.50, 0.55, 0.60]
 
-plt.rcParams.update({"font.size": 8, "font.family": "serif", "axes.linewidth": 0.6,
+plt.rcParams.update({"font.size": 8, "font.family": "DejaVu Serif", "mathtext.fontset": "dejavuserif",
+                     "pdf.fonttype": 42, "axes.linewidth": 0.6,
                      "lines.linewidth": 1.2, "legend.fontsize": 6.5, "legend.frameon": False,
                      "axes.grid": True, "grid.linewidth": 0.3, "grid.alpha": 0.6,
                      "savefig.bbox": "tight", "savefig.pad_inches": 0.02})
@@ -176,20 +177,20 @@ if curves:
     ax[0].loglog(g, en.upload_energy(kk, d, flat), "--", color="#e6550d", label=r"bytes only ($E_0{=}0$)")
     ax[0].set_xlabel("$k/d$"); ax[0].set_ylabel("energy per upload (J)"); ax[0].legend(loc="lower right")
     ax[0].set_title("(a) uplink energy", fontsize=8)
-    ax[1].semilogx(g, cm, "k-", label="measured, dense update")
+    ax[1].semilogx(g, cm, "k-", label="dense update")
     if "ef1" in curves:
-        ax[1].semilogx(*curves["ef1"], "-", color="#4292c6", label="measured, EF memory (1%)")
+        ax[1].semilogx(*curves["ef1"], "-", color="#4292c6", label="EF memory (1%)")
     ax[1].semilogx(g, g, ":", color="gray", label="worst case $k/d$")
-    ax[1].set_xlabel("$k/d$"); ax[1].set_ylabel(r"contraction $\delta(k)$"); ax[1].legend(loc="upper left")
+    ax[1].set_xlabel("$k/d$"); ax[1].set_ylabel(r"contraction $\delta(k)$"); ax[1].legend(loc="upper left", handlelength=1.6)
     ax[1].set_title("(b) top-$k$ contraction", fontsize=8)
-    for model, c, ls, lab in ((tail, "k", "-", "with tail"), (flat, "#e6550d", "--", "bytes only")):
+    for model, c, ls, lab in ((tail, "k", "-", "tail"), (flat, "#e6550d", "--", "bytes only")):
         eff = cm / en.upload_energy(kk, d, model)
         ax[2].semilogx(g, eff / eff.max(), ls, color=c, label=lab)
         j = int(np.argmax(eff))
         ax[2].plot(g[j], 1.0, "o", color=c, ms=4)
     effw = g / en.upload_energy(kk, d, tail)
-    ax[2].semilogx(g, effw / effw.max(), ":", color="gray", label="with tail, $\\delta{=}k/d$")
-    ax[2].set_xlabel("$k/d$"); ax[2].set_ylabel(r"$\eta(k)/\max\eta$"); ax[2].legend(loc="lower center")
+    ax[2].semilogx(g, effw / effw.max(), ":", color="gray", label="tail, $k/d$ bound")
+    ax[2].set_xlabel("$k/d$"); ax[2].set_ylabel(r"$\eta(k)/\max\eta$"); ax[2].legend(loc="center left", bbox_to_anchor=(0.0, 0.66), handlelength=1.6)
     ax[2].set_title("(c) contraction per joule", fontsize=8)
     for a in ax:
         a.set_xlim(1e-4, 1)

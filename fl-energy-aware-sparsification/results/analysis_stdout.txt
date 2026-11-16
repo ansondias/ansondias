@@ -1,0 +1,20 @@
+=== Main table (mean +- std over seeds) ===
+Fixed 1%             n=3 final 59.9 $\pm$ 0.7 last3 59.5 $\pm$ 0.5 | @20kJ 49.3 $\pm$ 1.0 @40kJ 58.3 $\pm$ 0.3 @60kJ 59.9 $\pm$ 0.7 | E 46.0 $\pm$ 3.1 kJ of 75.8 | surv 17.0 (low 0.0) | lowshare 23.2 $\pm$ 1.7 jain 0.939 $\pm$ 0.010 | lowupl 70.8 lowrho 0.010 meanrho 0.010 MB 124 | kJ@50 20.6 kJ@55 31.1 kJ@60 nan | lateLow 0.0 uploads 3599
+Fixed 10%            n=3 final 62.1 $\pm$ 0.8 last3 61.7 $\pm$ 0.7 | @20kJ 51.0 $\pm$ 0.9 @40kJ 59.5 $\pm$ 0.6 @60kJ 62.1 $\pm$ 0.8 | E 49.1 $\pm$ 3.5 kJ of 75.8 | surv 16.0 (low 0.0) | lowshare 19.1 $\pm$ 2.1 jain 0.890 $\pm$ 0.022 | lowupl 64.1 lowrho 0.100 meanrho 0.100 MB 974 | kJ@50 17.0 kJ@55 27.7 kJ@60 41.3 | lateLow 0.0 uploads 3485
+Fixed 100%           n=3 final 60.8 $\pm$ 0.3 last3 60.5 $\pm$ 0.3 | @20kJ 46.2 $\pm$ 0.7 @40kJ 54.6 $\pm$ 0.7 @60kJ 59.7 $\pm$ 1.0 | E 67.2 $\pm$ 6.2 kJ of 75.8 | surv 10.7 (low 0.0) | lowshare 13.2 $\pm$ 1.6 jain 0.781 $\pm$ 0.042 | lowupl 37.4 lowrho 1.000 meanrho 1.000 MB 5980 | kJ@50 27.5 kJ@55 43.5 kJ@60 61.3 | lateLow 0.0 uploads 2809
+EA tail-blind        n=3 final 60.9 $\pm$ 0.2 last3 60.5 $\pm$ 0.3 | @20kJ 47.4 $\pm$ 1.9 @40kJ 54.4 $\pm$ 0.6 @60kJ 59.3 $\pm$ 0.6 | E 67.3 $\pm$ 6.2 kJ of 75.8 | surv 10.7 (low 0.0) | lowshare 15.1 $\pm$ 0.8 jain 0.808 $\pm$ 0.029 | lowupl 45.6 lowrho 0.586 meanrho 0.925 MB 5769 | kJ@50 26.8 kJ@55 41.9 kJ@60 61.7 | lateLow 0.0 uploads 2903
+EA per-round         n=3 final 63.1 $\pm$ 0.5 last3 62.5 $\pm$ 0.5 | @20kJ 50.4 $\pm$ 0.7 @40kJ 57.7 $\pm$ 0.8 @60kJ 61.8 $\pm$ 0.4 | E 67.5 $\pm$ 6.2 kJ of 75.8 | surv 30.0 (low 10.0) | lowshare 13.9 $\pm$ 2.0 jain 0.795 $\pm$ 0.038 | lowupl 54.0 lowrho 0.331 meanrho 0.701 MB 4979 | kJ@50 19.6 kJ@55 30.7 kJ@60 50.9 | lateLow 57.0 uploads 3253
+EA dense-or-silent   n=3 final 63.0 $\pm$ 0.4 last3 62.6 $\pm$ 0.2 | @20kJ 50.0 $\pm$ 0.9 @40kJ 57.5 $\pm$ 0.5 @60kJ 61.6 $\pm$ 0.8 | E 67.2 $\pm$ 6.2 kJ of 75.8 | surv 30.0 (low 10.0) | lowshare 13.2 $\pm$ 1.6 jain 0.781 $\pm$ 0.042 | lowupl 37.4 lowrho 1.000 meanrho 1.000 MB 5980 | kJ@50 19.4 kJ@55 32.1 kJ@60 52.2 | lateLow 37.7 uploads 2809
+EA-MVT (proposed)    n=3 final 63.3 $\pm$ 0.5 last3 62.5 $\pm$ 0.6 | @20kJ 50.5 $\pm$ 0.9 @40kJ 57.8 $\pm$ 0.8 @60kJ 61.6 $\pm$ 0.5 | E 67.5 $\pm$ 6.2 kJ of 75.8 | surv 30.0 (low 10.0) | lowshare 15.0 $\pm$ 1.6 jain 0.818 $\pm$ 0.038 | lowupl 48.2 lowrho 0.509 meanrho 0.792 MB 5332 | kJ@50 19.6 kJ@55 30.7 kJ@60 50.2 | lateLow 49.3 uploads 3100
+EA-MVT-cap (post hoc) n=3 final 63.1 $\pm$ 0.9 last3 62.7 $\pm$ 0.7 | @20kJ 52.6 $\pm$ 1.2 @40kJ 60.1 $\pm$ 1.0 @60kJ 63.1 $\pm$ 0.9 | E 54.0 $\pm$ 4.6 kJ of 75.8 | surv 30.0 (low 10.0) | lowshare 16.6 $\pm$ 2.0 jain 0.856 $\pm$ 0.031 | lowupl 55.4 lowrho 0.291 meanrho 0.293 MB 2295 | kJ@50 15.4 kJ@55 25.6 kJ@60 38.8 | lateLow 56.0 uploads 3318
+
+=== Energy-to-accuracy, infinite batteries (per-client mean, J) ===
+rho=0.01  final 61.3 $\pm$ 0.4  E/upload tail 12.77 J flat 0.185 J | 50%: R=53 tail=0.68kJ flat=0.010kJ | 55%: R=85 tail=1.09kJ flat=0.016kJ | 60%: R=130 tail=1.66kJ flat=0.024kJ |
+rho=0.1   final 63.4 $\pm$ 0.7  E/upload tail 14.08 J flat 1.490 J | 50%: R=42 tail=0.59kJ flat=0.062kJ | 55%: R=68 tail=0.96kJ flat=0.102kJ | 60%: R=108 tail=1.52kJ flat=0.161kJ |
+rho=1.0   final 63.9 $\pm$ 0.5  E/upload tail 23.94 J flat 11.355 J | 50%: R=40 tail=0.96kJ flat=0.454kJ | 55%: R=67 tail=1.60kJ flat=0.757kJ | 60%: R=105 tail=2.51kJ flat=1.192kJ |
+
+k*/d over all MVT client-rounds: {'mean': 0.2404167917634709, 'median': 0.249606352475188, 'p10': 0.1916227297154088, 'p90': 0.2756190318713571}
+mean empirical delta(k) [dense]: {0.001: 0.186, 0.01: 0.38, 0.05: 0.616, 0.1: 0.746, 0.2: 0.873, 0.3: 0.934, 0.5: 0.984}
+mean empirical delta(k) [ef1]: {0.001: 0.016, 0.01: 0.073, 0.05: 0.268, 0.1: 0.45, 0.2: 0.693, 0.3: 0.835, 0.5: 0.962}
+
+figures -> figures
