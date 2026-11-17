@@ -1,0 +1,191 @@
+Experiment 10: Multi-Agent System (Orchestrator-Worker pattern)
+Model: gemini-3.5-flash-lite
+Tools: local Python functions
+
+==============================================================================
+USER TASK
+==============================================================================
+Research our company's leave policy, prepare a summary, and email it to Kunal.
+
+==============================================================================
+COLLABORATION
+==============================================================================
+[SUPERVISOR] calls delegate_to_researcher
+
+--- STEP 1: SUPERVISOR -> RESEARCHER ----------------------------------------
+Message passed to the specialist:
+    Search the company knowledge base for the company's leave policy.
+    [RESEARCHER] calls search_knowledge_base({"queries": ["leave policy", "paid time off PTO vacation sick leave", "maternity paternity parental bereavement leave", "leave accrual rollover carryover"]})
+    [RESEARCHER] search_knowledge_base returned:
+        Query: "leave policy"
+        1. [employee_leave_policy.pdf] (score 3.44) Employee Leave Policy All full-time employees are entitled to 18 days of paid annual leave per calendar year.
+        2. [employee_leave_policy.pdf] (score 2.12) Work From Home Policy Employees may work from home up to 2 days per week, subject to manager approval.
+        3. [employee_leave_policy.pdf] (score 1.76) Sick Leave Employees are entitled to 10 days of paid sick leave per year.
+        4. [employee_leave_policy.pdf] (score 1.32) Unused leave can be carried forward to the next year, up to a maximum of 5 days.
+        5. [employee_leave_policy.pdf] (score 1.32) A medical certificate is required for sick leave exceeding 2 consecutive days.
+
+        Query: "paid time off PTO vacation sick leave"
+        1. [employee_leave_policy.pdf] (score 6.75) Sick Leave Employees are entitled to 10 days of paid sick leave per year.
+        2. [employee_leave_policy.pdf] (score 5.8) Employee Leave Policy All full-time employees are entitled to 18 days of paid annual leave per calendar year.
+        3. [employee_leave_policy.pdf] (score 3.32) A medical certificate is required for sick leave exceeding 2 consecutive days.
+        4. [employee_leave_policy.pdf] (score 3.19) Sick leave does not carry forward and resets at the start of each calendar year.
+        5. [employee_leave_policy.pdf] (score 1.32) Unused leave can be carried forward to the next year, up to a maximum of 5 days.
+
+        Query: "maternity paternity parental bereavement leave"
+        1. [employee_leave_policy.pdf] (score 1.76) Sick Leave Employees are entitled to 10 days of paid sick leave per year.
+        2. [employee_leave_policy.pdf] (score 1.54) Employee Leave Policy All full-time employees are entitled to 18 days of paid annual leave per calendar year.
+        3. [employee_leave_policy.pdf] (score 1.32) Unused leave can be carried forward to the next year, up to a maximum of 5 days.
+        4. [employee_leave_policy.pdf] (score 1.32) A medical certificate is required for sick leave exceeding 2 consecutive days.
+        5. [employee_leave_policy.pdf] (score 1.26) Sick leave does not carry forward and resets at the start of each calendar year.
+
+        Query: "leave accrual rollover carryover"
+        1. [employee_leave_policy.pdf] (score 1.76) Sick Leave Employees are entitled to 10 days of paid sick leave per year.
+        2. [employee_leave_policy.pdf] (score 1.54) Employee Leave Policy All full-time employees are entitled to 18 days of paid annual leave per calendar year.
+        3. [employee_leave_policy.pdf] (score 1.32) Unused leave can be carried forward to the next year, up to a maximum of 5 days.
+        4. [employee_leave_policy.pdf] (score 1.32) A medical certificate is required for sick leave exceeding 2 consecutive days.
+        5. [employee_leave_policy.pdf] (score 1.26) Sick leave does not carry forward and resets at the start of each calendar year.
+    [RESEARCHER] calls search_knowledge_base({"queries": ["bereavement maternity paternity family leave", "leave request notice approval"]})
+    [RESEARCHER] search_knowledge_base returned:
+        Query: "bereavement maternity paternity family leave"
+        1. [employee_leave_policy.pdf] (score 1.76) Sick Leave Employees are entitled to 10 days of paid sick leave per year.
+        2. [employee_leave_policy.pdf] (score 1.54) Employee Leave Policy All full-time employees are entitled to 18 days of paid annual leave per calendar year.
+        3. [employee_leave_policy.pdf] (score 1.32) Unused leave can be carried forward to the next year, up to a maximum of 5 days.
+        4. [employee_leave_policy.pdf] (score 1.32) A medical certificate is required for sick leave exceeding 2 consecutive days.
+        5. [employee_leave_policy.pdf] (score 1.26) Sick leave does not carry forward and resets at the start of each calendar year.
+
+        Query: "leave request notice approval"
+        1. [employee_leave_policy.pdf] (score 3.94) Leave requests must be submitted at least 5 working days in advance through the HR portal.
+        2. [employee_leave_policy.pdf] (score 2.62) Work From Home Policy Employees may work from home up to 2 days per week, subject to manager approval.
+        3. [employee_leave_policy.pdf] (score 1.76) Sick Leave Employees are entitled to 10 days of paid sick leave per year.
+        4. [employee_leave_policy.pdf] (score 1.54) Employee Leave Policy All full-time employees are entitled to 18 days of paid annual leave per calendar year.
+        5. [employee_leave_policy.pdf] (score 1.32) Unused leave can be carried forward to the next year, up to a maximum of 5 days.
+--- STEP 1: RESEARCHER -> SUPERVISOR (output) ------------------------------
+    Here are the findings from the company knowledge base regarding the employee leave policy:
+
+    * **Annual Leave Entitlement:** All full-time employees are entitled to 18 days of paid annual leave per calendar year [employee_leave_policy.pdf].
+    * **Sick Leave Entitlement:** Employees are entitled to 10 days of paid sick leave per year [employee_leave_policy.pdf].
+    * **Sick Leave Documentation:** A medical certificate is required for sick leave exceeding 2 consecutive days [employee_leave_policy.pdf].
+    * **Sick Leave Rollover:** Sick leave does not carry forward and resets at the start of each calendar year [employee_leave_policy.pdf].
+    * **Annual Leave Carry Forward:** Unused annual leave can be carried forward to the next year, up to a maximum of 5 days [employee_leave_policy.pdf].
+    * **Leave Requests:** Leave requests must be submitted at least 5 working days in advance through the HR portal [employee_leave_policy.pdf].
+
+    *(Note: The knowledge base does not contain information on maternity, paternity, bereavement, or other types of family leave.)*
+[SUPERVISOR] calls delegate_to_writer
+
+--- STEP 2: SUPERVISOR -> WRITER ----------------------------------------
+Message passed to the specialist:
+    Writing task:
+    Write a concise, clear summary of the company's leave policy for Kunal, based strictly on the provided research findings. Keep it professional and brief.
+
+    Research findings from the Researcher:
+    Here are the findings from the company knowledge base regarding the employee leave policy:
+
+    * **Annual Leave Entitlement:** All full-time employees are entitled to 18 days of paid annual leave per calendar year [employee_leave_policy.pdf].
+    * **Sick Leave Entitlement:** Employees are entitled to 10 days of paid sick leave per year [employee_leave_policy.pdf].
+    * **Sick Leave Documentation:** A medical certificate is required for sick leave exceeding 2 consecutive days [employee_leave_policy.pdf].
+    * **Sick Leave Rollover:** Sick leave does not carry forward and resets at the start of each calendar year [employee_leave_policy.pdf].
+    * **Annual Leave Carry Forward:** Unused annual leave can be carried forward to the next year, up to a maximum of 5 days [employee_leave_policy.pdf].
+    * **Leave Requests:** Leave requests must be submitted at least 5 working days in advance through the HR portal [employee_leave_policy.pdf].
+
+    *(Note: The knowledge base does not contain information on maternity, paternity, bereavement, or other types of family leave.)*
+    [WRITER] calls count_words({"text": "Summary of company leave policy for Kunal:\n\nAnnual Leave:\n- Full-time employees get 18 days of paid annual leave per calendar year.\n- Up to 5 unused days can be carried forward to the next year.\n\nSick Leave:\n- Employees get 10 days of paid sick leave per year, which resets annually and does not carry forward.\n- A medical certificate is required for sick leave exceeding 2 consecutive days.\n\nLeave Requests:\n- Must be submitted at least 5 working days in advance via the HR portal.\n\nNote: Information on maternity, paternity, bereavement, or other family leave is not available."})
+    [WRITER] count_words returned:
+        100
+--- STEP 2: WRITER -> SUPERVISOR (output) ------------------------------
+    Summary of company leave policy for Kunal:
+
+    Annual Leave:
+    - Full-time employees get 18 days of paid annual leave per calendar year.
+    - Up to 5 unused days can be carried forward to the next year.
+
+    Sick Leave:
+    - Employees get 10 days of paid sick leave per year, which resets annually and does not carry forward.
+    - A medical certificate is required for sick leave exceeding 2 consecutive days.
+
+    Leave Requests:
+    - Must be submitted at least 5 working days in advance via the HR portal.
+
+    Note: Information on maternity, paternity, bereavement, or other family leave is not available.
+[SUPERVISOR] calls delegate_to_emailer
+
+--- STEP 3: SUPERVISOR -> EMAILER ----------------------------------------
+Message passed to the specialist:
+    Recipient name: Kunal
+    Subject: Company Leave Policy Summary
+
+    Approved summary:
+    Summary of company leave policy for Kunal:
+
+    Annual Leave:
+    - Full-time employees get 18 days of paid annual leave per calendar year.
+    - Up to 5 unused days can be carried forward to the next year.
+
+    Sick Leave:
+    - Employees get 10 days of paid sick leave per year, which resets annually and does not carry forward.
+    - A medical certificate is required for sick leave exceeding 2 consecutive days.
+
+    Leave Requests:
+    - Must be submitted at least 5 working days in advance via the HR portal.
+
+    Note: Information on maternity, paternity, bereavement, or other family leave is not available.
+    [EMAILER] calls lookup_contact({"name": "Kunal"})
+    [EMAILER] lookup_contact returned:
+        [
+          {
+            "name": "Kunal Meher",
+            "email": "kunal.meher@example.com"
+          }
+        ]
+    [EMAILER] calls send_email({"body": "Hi Kunal,\n\nSummary of company leave policy for Kunal:\n\nAnnual Leave:\n- Full-time employees get 18 days of paid annual leave per calendar year.\n- Up to 5 unused days can be carried forward to the next year.\n\nSick Leave:\n- Employees get 10 days of paid sick leave per year, which resets annually and does not carry forward.\n- A medical certificate is required for sick leave exceeding 2 consecutive days.\n\nLeave Requests:\n- Must be submitted at least 5 working days in advance via the HR portal.\n\nNote: Information on maternity, paternity, bereavement, or other family leave is not available.\n\nBest regards,\nHR Assistant", "to": "kunal.meher@example.com", "subject": "Company Leave Policy Summary"})
+    [EMAILER] send_email returned:
+        {"status": "sent (mock: saved to outbox, not delivered)", "to": "kunal.meher@example.com", "message_id": "<179485861341.911.14090778894733726510@example.com>", "saved_to": "outbox/20261116T195013411059Z_kunal.meher.eml"}
+--- STEP 3: EMAILER -> SUPERVISOR (output) ------------------------------
+    Recipient address: kunal.meher@example.com
+    Subject: Company Leave Policy Summary
+    Message ID: <179485861341.911.14090778894733726510@example.com>
+
+==============================================================================
+SUPERVISOR'S FINAL REPORT TO THE USER
+==============================================================================
+The task has been successfully completed:
+
+- **Researcher:** Searched the company knowledge base and retrieved details on annual leave (18 days/year, up to 5 days carry forward), sick leave (10 days/year, medical certificate needed after 2 days, no rollover), leave request procedures (5 days in advance via HR portal), and noted the absence of other leave types.
+- **Writer:** Prepared a concise and clear summary of the leave policy based strictly on the findings.
+- **Emailer:** Looked up Kunal's contact details (`kunal.meher@example.com`) and successfully emailed the approved summary with the subject "Company Leave Policy Summary".
+
+==============================================================================
+DELEGATION SEQUENCE
+==============================================================================
+1. Supervisor -> Researcher passed: research task
+2. Supervisor -> Writer     passed: writing task + Researcher's findings
+3. Supervisor -> Emailer    passed: recipient + subject + approved summary from the Writer
+Model calls: Supervisor 4, Researcher 3, Writer 2, Emailer 3 (total 12)
+
+==============================================================================
+MOCK OUTBOX (emails written by this run; nothing was really sent)
+==============================================================================
+File: outbox/20261116T195013411059Z_kunal.meher.eml
+    From: hr-assistant@example.com
+    To: kunal.meher@example.com
+    Subject: Company Leave Policy Summary
+    Date: Mon, 16 Nov 2026 19:50:13 +0000
+
+    Hi Kunal,
+
+    Summary of company leave policy for Kunal:
+
+    Annual Leave:
+    - Full-time employees get 18 days of paid annual leave per calendar year.
+    - Up to 5 unused days can be carried forward to the next year.
+
+    Sick Leave:
+    - Employees get 10 days of paid sick leave per year, which resets annually and does not carry forward.
+    - A medical certificate is required for sick leave exceeding 2 consecutive days.
+
+    Leave Requests:
+    - Must be submitted at least 5 working days in advance via the HR portal.
+
+    Note: Information on maternity, paternity, bereavement, or other family leave is not available.
+
+    Best regards,
+    HR Assistant

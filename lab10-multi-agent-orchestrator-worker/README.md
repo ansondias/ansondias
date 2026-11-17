@@ -31,6 +31,7 @@ A Supervisor agent completes a task by delegating to three specialist agents ins
 | `data/knowledge_base/` | The two PDFs supplied with the lab: the leave policy and an onboarding guide. The onboarding guide is off-topic for the demo task, so the Researcher has to leave it out. |
 | `data/contacts.json` | Contact directory. All addresses are `@example.com` test addresses. |
 | `tests/test_system.py` | Offline tests that need no API key. |
+| `execution_output.txt` | Transcript of a real run on `gemini-3.5-flash-lite`: every delegation, tool call and agent output, the delegation sequence and the email that was written to the mock outbox. |
 
 ## How it meets the requirements
 
@@ -53,7 +54,9 @@ A call to a tool outside an agent's allowlist is refused by the loop and reporte
 
 ## Running it
 
-It needs Python 3.10+ and a Gemini API key, which you can create for free in [Google AI Studio](https://aistudio.google.com/apikey). The agents use Google's `google-genai` SDK. Expect about a dozen model calls per run; if the free tier's per-minute limit is hit, the client waits and retries by itself.
+It needs Python 3.10+ and a Gemini API key, which you can create for free in [Google AI Studio](https://aistudio.google.com/apikey). The agents use Google's `google-genai` SDK. A run makes about a dozen model calls (the saved run made 12). If a model is overloaded or over its per-minute limit, the client retries for about a minute before giving up.
+
+The free tier also has a daily request limit per model; it was 20 requests a day when this lab was run, so expect one or two runs per model per day. If a run stops with `429 RESOURCE_EXHAUSTED` and asks you to retry in some hours, switch to another model with `--model` rather than waiting.
 
 ```bash
 pip install -r requirements.txt
