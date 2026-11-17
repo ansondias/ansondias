@@ -1,4 +1,4 @@
-\documentclass[conference]{IEEEtran}
+\documentclass[conference,a4paper]{IEEEtran}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -23,14 +23,15 @@
 \title{Energy-Aware Control of the Sparsification Ratio in Federated Learning with Error Feedback}
 
 \author{\IEEEauthorblockN{Anson Dias}
-\IEEEauthorblockA{B.Tech. (Artificial Intelligence \& Machine Learning)\\
-Atlas SkillTech University, Mumbai, India\\
+\IEEEauthorblockA{\textit{B.Tech. Artificial Intelligence \& Machine Learning} \\
+\textit{Atlas SkillTech University}\\
+Mumbai, India \\
 ansondias18@gmail.com}}
 
 \maketitle
 
 \begin{abstract}
-Top-$k$ sparsification with error feedback is judged by the bytes it saves, but a phone is limited by joules, and every cellular upload pays a fixed radio promotion and tail cost. We ask which sparsity a federated client should choose given its remaining battery. Charging uploads with a published LTE power model, we show that maximising contraction within one round's energy allowance is infeasible whenever the allowance is below the 12.6~J fixed cost. We extend the program to upload frequency and sparsity and solve it in closed form: the tail sets a battery-independent payload floor $k^\star$, and the battery sets how often to upload. In FedAvg with error feedback on CIFAR-10 with 30 heterogeneous-battery clients and three seeds, the measured floor is $k^\star\approx0.25d$. Energy-aware scheduling keeps all 30 clients uploading to the last round, against 10.7 to 17.0 under fixed sparsity, and ends at 62.5\% accuracy against 61.7\% for the best fixed ratio. Two predictions fail: the floor has no measurable effect, and the derived rule is 1.65 points behind fixed 10\% sparsity at an equal 40~kJ budget. A variant capping the payload at $k^\star$, added post hoc, is the most accurate per joule.
+Top-k sparsification with error feedback is judged by the bytes it saves, but a phone is limited by joules, and every cellular upload pays a fixed radio promotion and tail cost. We ask which sparsity a federated client should choose given its remaining battery. Under a published 4G Long-Term Evolution (LTE) power model, maximising contraction within one round's energy allowance is infeasible below the 12.6~J fixed cost. We extend the program to upload frequency and sparsity and solve it in closed form: the tail sets a minimum payload that does not depend on the battery, and the battery sets how often to upload. In federated averaging with error feedback on CIFAR-10 with 30 heterogeneous-battery clients and three seeds, the measured minimum payload is 0.25 of the coordinates. Energy-aware scheduling keeps all 30 clients uploading to the end, against 10.7 to 17.0 under fixed sparsity, and ends at 62.5\% accuracy against 61.7\% for the best fixed ratio. Two predictions fail: the minimum payload has no measurable effect, and the derived rule is 1.65 points behind fixed 10\% sparsity at an equal 40~kJ budget. A variant capping the payload at that minimum, added post hoc, is the most accurate per joule.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -38,9 +39,9 @@ federated learning, gradient sparsification, error feedback, energy efficiency, 
 \end{IEEEkeywords}
 
 \section{Introduction}
-Federated learning (FL) trains a shared model on phones without moving their data~\cite{mcmahan2017}. The uplink is the scarce resource, and top-$k$ sparsification with error feedback (EF) is the standard way to shrink it: a client sends only the $k$ largest of $d$ coordinates and remembers the rest~\cite{aji2017,stich2018,karimireddy2019}. The saving is measured in \emph{bytes}.
+Federated learning (FL) trains a shared model on phones without moving their data, typically by federated averaging (FedAvg)~\cite{mcmahan2017}. The uplink is the scarce resource, and top-$k$ sparsification with error feedback (EF) is the standard way to shrink it: a client sends only the $k$ largest of $d$ coordinates and remembers the rest~\cite{aji2017,stich2018,karimireddy2019}. The saving is measured in \emph{bytes}.
 
-A battery holds joules, and cellular radio energy is not proportional to payload. After the last packet an LTE modem stays in its high-power state for a \emph{tail} of about 11.6~s~\cite{huang2012,balasubramanian2009}, which costs about 12.3~J whether the upload was 3~kB or 2~MB. For the 532k-parameter network used here, cutting an upload from dense to top-1\% removes 98.4\% of the bytes and only 46.7\% of the joules. Energy-aware sparsification~\cite{vaishnav2023} does not, as far as we could establish, model this payload-independent term (Section~\ref{sec:related}). We ask: given its remaining battery, which sparsity should a client pick when an upload costs $E(s)=E_{\text{fixed}}+e_{\text{byte}}s+P_{\text{tail}}\tau_{\text{tail}}$? Our claim is that the tail changes the answer qualitatively: the battery should set how \emph{often} a client uploads, not how \emph{much}.
+A battery holds joules, and cellular radio energy is not proportional to payload. After the last packet a 4G Long-Term Evolution (LTE) modem stays in its high-power state for a \emph{tail} of about 11.6~s~\cite{huang2012,balasubramanian2009}, which costs about 12.3~J whether the upload was 3~kB or 2~MB. For the 532k-parameter network used here, cutting an upload from dense to top-1\% removes 98.4\% of the bytes and only 46.7\% of the joules. Energy-aware sparsification~\cite{vaishnav2023} does not, as far as we could establish, model this payload-independent term (Section~\ref{sec:related}). We ask: given its remaining battery, which sparsity should a client pick when an upload costs $E(s)=E_{\text{fixed}}+e_{\text{byte}}s+P_{\text{tail}}\tau_{\text{tail}}$? Our claim is that the tail changes the answer qualitatively: the battery should set how \emph{often} a client uploads, not how \emph{much}.
 
 \textbf{Contributions.}
 \begin{itemize}
@@ -56,7 +57,7 @@ A battery holds joules, and cellular radio energy is not proportional to payload
 \|C(x)-x\|^2\le(1-\delta)\|x\|^2\quad\forall x\in\mathbb{R}^d ,
 \label{eq:contract}
 \end{equation}
-and top-$k$ satisfies \eqref{eq:contract} with $\delta=k/d$ in the worst case~\cite{stich2018}. EF adds the discarded part back before the next compression; compressed SGD then keeps the leading $\mathcal{O}(1/\sqrt{T})$ rate of SGD, and $\delta$ enters only lower-order terms that grow as $\delta$ shrinks~\cite{karimireddy2019,stich2020}. Fatkhullin \emph{et al.}~\cite{fatkhullin2023} tighten these rates with momentum, and Li and Li~\cite{li2023} show that partial participation slows EF in FL through stale error compensation. Sattler \emph{et al.}~\cite{sattler2020} carry top-$k$ into non-IID FL, Han \emph{et al.}~\cite{han2020} adapt $k$ online to minimise training time, and Yan \emph{et al.}~\cite{yan2025} adapt it to client mobility.
+and top-$k$ satisfies \eqref{eq:contract} with $\delta=k/d$ in the worst case~\cite{stich2018}. EF adds the discarded part back before the next compression; compressed stochastic gradient descent (SGD) then keeps the leading $\mathcal{O}(1/\sqrt{T})$ rate of SGD, and $\delta$ enters only lower-order terms that grow as $\delta$ shrinks~\cite{karimireddy2019,stich2020}. Fatkhullin \emph{et al.}~\cite{fatkhullin2023} tighten these rates with momentum, and Li and Li~\cite{li2023} show that partial participation slows EF in FL through stale error compensation. Sattler \emph{et al.}~\cite{sattler2020} carry top-$k$ into FL on non-independent and identically distributed (non-IID) data, Han \emph{et al.}~\cite{han2020} adapt $k$ online to minimise training time, and Yan \emph{et al.}~\cite{yan2025} adapt it to client mobility.
 
 \textbf{Energy-aware FL.} Tran \emph{et al.}~\cite{tran2019}, Yang \emph{et al.}~\cite{yang2021} and Kim \emph{et al.}~\cite{kim2024} minimise FL energy over transmit power, bandwidth, local accuracy or quantisation; Xu and Wang~\cite{xu2021}, Nishio and Yonetani~\cite{nishio2019} and Arouj and Abdelmoniem~\cite{arouj2022} select clients under energy or battery constraints; Agrawal \emph{et al.}~\cite{agrawal2023} show that client energy per sample is not constant. These works model transmission energy as power times airtime, which is proportional to payload at a fixed rate. Vaishnav \emph{et al.}~\cite{vaishnav2023} adapt the sparsification level by maximising information content per unit energy, and Athanasakos~\cite{athanasakos2026} selects coordinates under per-parameter energy costs.
 
@@ -183,7 +184,7 @@ and $\kst$ is nondecreasing in $\Ez$.
 
 Equation~\eqref{eq:mvt} is Charnov's marginal value theorem~\cite{charnov1976}: the tail is the travel cost between patches, and a client keeps sending coordinates until the marginal contraction per joule falls to the average. The battery does not appear in \eqref{eq:mvt}; it sets $q$, and $k$ only once $q=1$. With $\Ez=0$ the battery sets $k$ instead.
 
-\textbf{Controller.} Algorithm~\ref{alg:mvt} implements \eqref{eq:sol} with a token bucket: each round the ledger $A_i$ grows by $\Bbar_i$, the client uploads when $A_i$ covers $E(\kst_i)$, and then spends all of $A_i$. $\kst_i$ is recomputed from \eqref{eq:delta} on the client's own $p_i$ at every upload; in its first round a client trains once to measure it.
+\textbf{Controller.} Algorithm~\ref{alg:mvt}, which we call EA-MVT (energy-aware, marginal value theorem), implements \eqref{eq:sol} with a token bucket: each round the ledger $A_i$ grows by $\Bbar_i$, the client uploads when $A_i$ covers $E(\kst_i)$, and then spends all of $A_i$. $\kst_i$ is recomputed from \eqref{eq:delta} on the client's own $p_i$ at every upload; in its first round a client trains once to measure it.
 
 \begin{algorithm}[t]
 \caption{EA-MVT, client $i$, round $r$}
@@ -236,15 +237,15 @@ EA-MVT-cap (post hoc) & $\mathbf{52.6\pm1.2}$ & $\mathbf{60.1\pm1.0}$ & $\mathbf
 \label{fig:model}
 \end{figure*}
 
-\textbf{Data and model.} CIFAR-10~\cite{krizhevsky2009} (50k train, 10k test, per-channel normalisation, no augmentation), split over $N=30$ clients by a class-wise Dirichlet partition with concentration 0.5~\cite{hsu2019}. The model is a CNN without normalisation layers (conv16--pool--conv32--pool--fc256--fc10, $d=532{,}202$).
+\textbf{Data and model.} CIFAR-10~\cite{krizhevsky2009} (50k train, 10k test, per-channel normalisation, no augmentation), split over $N=30$ clients by a class-wise Dirichlet partition with concentration 0.5~\cite{hsu2019}. The model is a convolutional neural network (CNN) without normalisation layers (conv16--pool--conv32--pool--fc256--fc10, $d=532{,}202$).
 
 \textbf{Hyperparameters.} $R=150$ rounds of \eqref{eq:ef}; each uploading client runs $\tau=10$ SGD steps, batch 32, step size 0.1, chosen from $\{0.02,0.05,0.1,0.2\}$ in 20-round pilots of dense FedAvg and not tuned per policy. Each phone has a 4000~mAh, 3.85~V battery (55.44~kJ) at a state of charge drawn from $U[0.05,1]$, and FL may spend 10\% of the charge present, so $\Bbar_i\in[1.85,36.96]$~J. In the three seeds, 11, 15 and 16 clients fall below the cliff $\Ez$ and 11, 8 and 9 lie above $E(d)$; the mean fleet battery is 75.8~kJ.
 
-\textbf{Arms.} All arms are charged the full model \eqref{eq:energy}. \emph{Fixed} $k/d\in\{0.01,0.1,1\}$ (baseline): upload every round until the battery cannot pay. \emph{EA tail-blind}: token bucket, $k$ chosen with $\Ez=0$. \emph{EA per-round}: \eqref{eq:p1} on the ledger, uploading as soon as any $k\ge1$ is affordable. \emph{EA dense-or-silent}: Algorithm~\ref{alg:mvt} with $\kst=d$. \emph{EA-MVT}: Algorithm~\ref{alg:mvt}. \emph{EA-MVT-cap}: line~7 replaced by $k\gets\kst_i$, keeping the surplus; added \emph{after} seeing the other results.
+\textbf{Arms.} All arms, fixed and energy-aware (EA), are charged the full model \eqref{eq:energy}. \emph{Fixed} $k/d\in\{0.01,0.1,1\}$ (baseline): upload every round until the battery cannot pay. \emph{EA tail-blind}: token bucket, $k$ chosen with $\Ez=0$. \emph{EA per-round}: \eqref{eq:p1} on the ledger, uploading as soon as any $k\ge1$ is affordable. \emph{EA dense-or-silent}: Algorithm~\ref{alg:mvt} with $\kst=d$. \emph{EA-MVT}: Algorithm~\ref{alg:mvt}. \emph{EA-MVT-cap}: line~7 replaced by $k\gets\kst_i$, keeping the surplus; added \emph{after} seeing the other results.
 
 \textbf{Metrics.} Test accuracy at a fixed fleet energy budget and at round $R$; clients \emph{surviving}, i.e.\ uploading in the last 15 rounds; contribution $c_i=\sum_r\delta_i^r$, its Jain index~\cite{jain1984} and the share from the lowest battery tercile.
 
-\textbf{Seeds, tools, hardware.} Seeds 0--2 for all arms, 3--4 for a confirmation; a seed fixes partition, batteries, initial model and minibatches, shared by all arms. Three unlimited-battery arms (fixed $k/d$) measure rounds-to-accuracy. Python 3.13.18, PyTorch 2.15.0 (CPU), NumPy 2.5.3, Matplotlib 3.11.2; one VM with 4 vCPUs (Intel Xeon, 2.1~GHz), 15~GB RAM, no GPU. A run takes 9.9--15.8 min on one thread; the 39 runs take 8.0 CPU-hours.
+\textbf{Seeds, tools, hardware.} Seeds 0--2 for all arms, 3--4 for a confirmation; a seed fixes partition, batteries, initial model and minibatches, shared by all arms. Three unlimited-battery arms (fixed $k/d$) measure rounds-to-accuracy. Python 3.13.18, PyTorch 2.15.0 (CPU), NumPy 2.5.3, Matplotlib 3.11.2; one virtual machine with 4 vCPUs (Intel Xeon, 2.1~GHz), 15~GB RAM, no GPU. A run takes 9.9--15.8 min on one thread; the 39 runs take 8.0 CPU-hours.
 
 \section{Results and Discussion}
 \label{sec:results}
@@ -328,19 +329,19 @@ Under an LTE tail, sparsity can at most halve the energy of an upload, so a batt
 \bibitem{li2023} X.~Li and P.~Li, ``Analysis of error feedback in federated non-convex optimization with biased compression: Fast convergence and partial participation,'' in \emph{Proc. ICML}, 2023, pp. 19638--19688.
 \bibitem{sattler2020} F.~Sattler, S.~Wiedemann, K.-R. M\"uller, and W.~Samek, ``Robust and communication-efficient federated learning from non-i.i.d. data,'' \emph{IEEE Trans. Neural Netw. Learn. Syst.}, vol.~31, no.~9, pp. 3400--3413, 2020.
 \bibitem{han2020} P.~Han, S.~Wang, and K.~K. Leung, ``Adaptive gradient sparsification for efficient federated learning: An online learning approach,'' in \emph{Proc. IEEE ICDCS}, 2020, pp. 300--310.
-\bibitem{yan2025} J.~Yan, T.~Chen, Y.~Sun, Z.~Nan, S.~Zhou, and Z.~Niu, ``Mobility-aware asynchronous federated learning with dynamic sparsification,'' \emph{arXiv:2506.07328}, 2025.
+\bibitem{yan2025} J.~Yan, T.~Chen, Y.~Sun, Z.~Nan, S.~Zhou, and Z.~Niu, ``Mobility-aware asynchronous federated learning with dynamic sparsification,'' 2025, arXiv:2506.07328. [Online]. Available: \url{https://arxiv.org/abs/2506.07328}
 \bibitem{tran2019} N.~H. Tran, W.~Bao, A.~Zomaya, M.~N.~H. Nguyen, and C.~S. Hong, ``Federated learning over wireless networks: Optimization model design and analysis,'' in \emph{Proc. IEEE INFOCOM}, 2019, pp. 1387--1395.
 \bibitem{yang2021} Z.~Yang, M.~Chen, W.~Saad, C.~S. Hong, and M.~Shikh-Bahaei, ``Energy efficient federated learning over wireless communication networks,'' \emph{IEEE Trans. Wireless Commun.}, vol.~20, no.~3, pp. 1935--1949, 2021.
 \bibitem{kim2024} M.~Kim, W.~Saad, M.~Mozaffari, and M.~Debbah, ``Green, quantized federated learning over wireless networks: An energy-efficient design,'' \emph{IEEE Trans. Wireless Commun.}, vol.~23, no.~2, pp. 1386--1402, 2024.
 \bibitem{xu2021} J.~Xu and H.~Wang, ``Client selection and bandwidth allocation in wireless federated learning networks: A long-term perspective,'' \emph{IEEE Trans. Wireless Commun.}, vol.~20, no.~2, pp. 1188--1200, 2021.
 \bibitem{nishio2019} T.~Nishio and R.~Yonetani, ``Client selection for federated learning with heterogeneous resources in mobile edge,'' in \emph{Proc. IEEE ICC}, 2019, pp. 1--7.
-\bibitem{arouj2022} A.~Arouj and A.~M. Abdelmoniem, ``Towards energy-aware federated learning on battery-powered clients,'' \emph{arXiv:2208.04505}, 2022.
+\bibitem{arouj2022} A.~Arouj and A.~M. Abdelmoniem, ``Towards energy-aware federated learning on battery-powered clients,'' 2022, arXiv:2208.04505. [Online]. Available: \url{https://arxiv.org/abs/2208.04505}
 \bibitem{agrawal2023} P.~Agrawal, P.~Wiesner, and O.~Kao, ``Towards benchmarking power-performance characteristics of federated learning clients,'' in \emph{Proc. 2nd Workshop Mach. Learn. Netw. (MaLeNe)}, 2023.
-\bibitem{athanasakos2026} E.~M. Athanasakos, ``A theoretical framework for energy-aware gradient pruning in federated learning,'' \emph{arXiv:2603.22465}, 2026.
+\bibitem{athanasakos2026} E.~M. Athanasakos, ``A theoretical framework for energy-aware gradient pruning in federated learning,'' 2026, arXiv:2603.22465. [Online]. Available: \url{https://arxiv.org/abs/2603.22465}
 \bibitem{ding2024} Z.~Ding \emph{et al.}, ``Energy optimization for mobile applications by exploiting 5G inactive state,'' \emph{IEEE Trans. Mobile Comput.}, vol.~23, no.~11, pp. 10280--10295, 2024.
 \bibitem{charnov1976} E.~L. Charnov, ``Optimal foraging, the marginal value theorem,'' \emph{Theor. Popul. Biol.}, vol.~9, no.~2, pp. 129--136, 1976.
 \bibitem{krizhevsky2009} A.~Krizhevsky, ``Learning multiple layers of features from tiny images,'' Univ. Toronto, Tech. Rep., 2009.
-\bibitem{hsu2019} T.-M.~H. Hsu, H.~Qi, and M.~Brown, ``Measuring the effects of non-identical data distribution for federated visual classification,'' \emph{arXiv:1909.06335}, 2019.
+\bibitem{hsu2019} T.-M.~H. Hsu, H.~Qi, and M.~Brown, ``Measuring the effects of non-identical data distribution for federated visual classification,'' 2019, arXiv:1909.06335. [Online]. Available: \url{https://arxiv.org/abs/1909.06335}
 \bibitem{jain1984} R.~Jain, D.-M. Chiu, and W.~Hawe, ``A quantitative measure of fairness and discrimination for resource allocation in shared computer systems,'' DEC Res. Rep. TR-301, 1984.
 \end{thebibliography}
 
