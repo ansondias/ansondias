@@ -1,0 +1,52 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{booktabs,array}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\begin{document}
+{\large\bfseries Reproducibility Sheet}\\[2pt]
+\emph{Energy-Aware Control of the Sparsification Ratio in Federated Learning with Error Feedback}\\
+Anson Dias, Atlas SkillTech University --- Next Generation Computing, End Term
+
+\textbf{Code.} \url{https://github.com/ansondias/ansondias/tree/claude/federated-learning-energy-sparsification-ts45m1/fl-energy-aware-sparsification}
+(folder \texttt{fl-energy-aware-sparsification/}; also submitted as a \texttt{.zip}). The \texttt{README.md} there repeats these commands.
+
+\textbf{Tool versions.}\par\noindent
+\begin{tabular}{@{}ll@{}}
+Python & 3.13.18\\
+PyTorch & 2.15.0 (run on CPU only)\\
+NumPy / Matplotlib / Pillow & 2.5.3 / 3.11.2 / 12.3.0\\
+Paper & TeX Live 2023, IEEEtran.cls V1.8b (conference option, unmodified)\\
+\end{tabular}
+
+\textbf{Hardware.} One Linux cloud VM: 4 vCPUs (Intel Xeon @ 2.10 GHz), 15 GB RAM, no GPU. Each run uses one thread (\texttt{--threads 1}); four runs execute in parallel.
+
+\textbf{Data.} CIFAR-10, lossless PNG mirror \url{https://s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz} (135 MB), converted once with \texttt{prepare\_data.py}, which checks 50{,}000/10{,}000 images and 5{,}000/1{,}000 per class.
+
+\textbf{Random seeds.} Seeds 0, 1, 2: every arm of the main grid. Seeds 3, 4: fresh-seed confirmation (fixed 10\%, EA-MVT, EA-MVT-cap). A seed fixes the Dirichlet partition, the battery levels, the initial weights and every minibatch (per-client generator seeded with $1{,}000{,}003\,s+1009\,r+i$), and is shared by all arms.
+
+\textbf{Wall-clock runtime.} One 150-round run: 9.9--15.8 min on one thread (median 11.7 min). Main grid (33 runs) plus confirmation (6 runs): 8.0 CPU-hours, about 2 h with 4 runs in parallel. \texttt{analysis.py} and \texttt{paper\_numbers.py}: under 1 min each.
+
+\textbf{Commands} (from \texttt{fl-energy-aware-sparsification/}).\par\noindent
+\begin{tabular}{@{}>{\raggedright}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.64\textwidth}@{}}
+\toprule
+Output & Command\\
+\midrule
+Setup & \texttt{pip install torch numpy matplotlib pillow}\\
+Data & \texttt{curl -O <mirror URL above>; mkdir -p data/raw; tar -xzf cifar10.tgz -C data/raw; python prepare\_data.py data/raw/cifar10 data/cifar10.npz}\\
+All run logs (main grid) & \texttt{DATA=data/cifar10.npz JOBS=4 ./run\_all.sh} $\rightarrow$ \texttt{results/*.json}\\
+Fresh-seed logs & \texttt{DATA=data/cifar10.npz JOBS=4 ./run\_confirm.sh} $\rightarrow$ \texttt{results/confirm/*.json}\\
+Fig.~1, Fig.~2, Fig.~3, Table~II, Table~III & \texttt{python analysis.py results figures} $\rightarrow$ \texttt{figures/fig\_model.pdf}, \texttt{fig\_accuracy.pdf}, \texttt{fig\_fairness.pdf}; table values on stdout and in \texttt{results/summary.json}\\
+Table~I, all other in-text numbers & \texttt{python energy.py}; \texttt{python paper\_numbers.py results}\\
+One run & \texttt{python fl\_sim.py --policy mvt --seed 0 --out results/mvt-s0.json} (policies: \texttt{fixed --rho R}, \texttt{blind}, \texttt{greedy}, \texttt{dos}, \texttt{mvt}, \texttt{mvtcap}; \texttt{--unconstrained} for unlimited batteries)\\
+Paper PDF & \texttt{cd paper \&\& pdflatex paper.tex \&\& pdflatex paper.tex}\\
+\bottomrule
+\end{tabular}
+
+\textbf{Configuration (all runs).} 30 clients, Dirichlet $\alpha=0.5$, 150 rounds, 10 local SGD steps, batch 32, step size 0.1, battery 4000 mAh at 3.85 V, state of charge $U[0.05,1]$, 10\% of present charge available to FL, accuracy evaluated every 5 rounds on the 10{,}000-image test set. LTE constants from Huang \emph{et al.}, MobiSys 2012, in \texttt{energy.py}.
+
+\textbf{Determinism.} PyTorch CPU kernels can differ in the last bits across library versions and CPU types, so re-runs on other machines may differ slightly; the logged results used in the paper are included in \texttt{results/}.
+\end{document}

@@ -172,16 +172,16 @@ if curves:
     tail, flat = en.lte_model(True), en.lte_model(False)
     g, cm = curves.get("dense", next(iter(curves.values())))
     kk = np.maximum(1, np.round(g * d))
-    fig, ax = plt.subplots(1, 3, figsize=(7.16, 1.9))
+    fig, ax = plt.subplots(1, 3, figsize=(7.16, 1.95))
     ax[0].loglog(g, en.upload_energy(kk, d, tail), "k-", label="LTE with tail")
     ax[0].loglog(g, en.upload_energy(kk, d, flat), "--", color="#e6550d", label=r"bytes only ($E_0{=}0$)")
-    ax[0].set_xlabel("$k/d$"); ax[0].set_ylabel("energy per upload (J)"); ax[0].legend(loc="lower right")
+    ax[0].set_xlabel("fraction sent, $k/d$ (–)"); ax[0].set_ylabel("energy per upload (J)"); ax[0].legend(loc="lower right")
     ax[0].set_title("(a) uplink energy", fontsize=8)
     ax[1].semilogx(g, cm, "k-", label="dense update")
     if "ef1" in curves:
         ax[1].semilogx(*curves["ef1"], "-", color="#4292c6", label="EF memory (1%)")
     ax[1].semilogx(g, g, ":", color="gray", label="worst case $k/d$")
-    ax[1].set_xlabel("$k/d$"); ax[1].set_ylabel(r"contraction $\delta(k)$"); ax[1].legend(loc="upper left", handlelength=1.6)
+    ax[1].set_xlabel("fraction sent, $k/d$ (–)"); ax[1].set_ylabel(r"contraction $\delta(k)$ (–)"); ax[1].legend(loc="upper left", handlelength=1.6)
     ax[1].set_title("(b) top-$k$ contraction", fontsize=8)
     for model, c, ls, lab in ((tail, "k", "-", "tail"), (flat, "#e6550d", "--", "bytes only")):
         eff = cm / en.upload_energy(kk, d, model)
@@ -190,7 +190,7 @@ if curves:
         ax[2].plot(g[j], 1.0, "o", color=c, ms=4)
     effw = g / en.upload_energy(kk, d, tail)
     ax[2].semilogx(g, effw / effw.max(), ":", color="gray", label="tail, $k/d$ bound")
-    ax[2].set_xlabel("$k/d$"); ax[2].set_ylabel(r"$\eta(k)/\max\eta$"); ax[2].legend(loc="center left", bbox_to_anchor=(0.0, 0.66), handlelength=1.6)
+    ax[2].set_xlabel("fraction sent, $k/d$ (–)"); ax[2].set_ylabel(r"$\eta(k)/\max\,\eta$ (–)"); ax[2].legend(loc="center left", bbox_to_anchor=(0.0, 0.66), handlelength=1.6)
     ax[2].set_title("(c) contraction per joule", fontsize=8)
     for a in ax:
         a.set_xlim(1e-4, 1)
@@ -198,7 +198,7 @@ if curves:
     fig.savefig(FIG / "fig_model.pdf"); plt.close(fig)
 
 # ================= Figure 2: accuracy vs round and vs fleet energy =================
-fig, ax = plt.subplots(1, 2, figsize=(7.16, 2.5))
+fig, ax = plt.subplots(1, 2, figsize=(7.16, 2.25))
 for key, name in ARMS:
     runs = load(key)
     if not runs:
@@ -209,16 +209,16 @@ for key, name in ARMS:
     kw = dict(color=COL[key], ls=STY[key], label=name, lw=1.6 if key == "mvt" else 1.1)
     ax[0].plot(rr, acc, **kw)
     ax[1].plot(e, acc, **kw)
-ax[0].set_xlabel("round"); ax[0].set_ylabel("test accuracy (%)"); ax[0].set_title("(a) accuracy vs. round", fontsize=8)
-ax[1].set_xlabel("fleet uplink energy spent (kJ)"); ax[1].set_title("(b) accuracy vs. energy", fontsize=8)
+ax[0].set_xlabel("communication round (count)"); ax[0].set_ylabel("test accuracy (%)"); ax[0].set_title("(a) accuracy vs. round", fontsize=8)
+ax[1].set_xlabel("fleet uplink energy spent (kJ)"); ax[1].set_ylabel("test accuracy (%)"); ax[1].set_title("(b) accuracy vs. energy", fontsize=8)
 ax[0].set_ylim(30, None); ax[1].set_ylim(30, None)
 h, l = ax[0].get_legend_handles_labels()
-fig.tight_layout(w_pad=0.8, rect=(0, 0.11, 1, 1))
+fig.tight_layout(w_pad=0.8, rect=(0, 0.15, 1, 1))
 fig.legend(h, l, loc="lower center", ncol=4, columnspacing=1.2, handlelength=2.4)
 fig.savefig(FIG / "fig_accuracy.pdf"); plt.close(fig)
 
 # ================= Figure 3: participation and per-tier contribution =================
-fig, ax = plt.subplots(1, 2, figsize=(7.16, 2.3))
+fig, ax = plt.subplots(1, 2, figsize=(7.16, 2.1))
 w = 0.1
 for j, (key, name) in enumerate(ARMS):
     runs = load(key)
@@ -234,13 +234,13 @@ for j, (key, name) in enumerate(ARMS):
         tot += np.array([sd[t].mean() for t in tiers(r)])
     ax[1].bar(np.arange(3) + (j - 3.5) * w, tot / len(runs), w, color=COL[key], label=name,
               edgecolor="k", linewidth=0.3)
-ax[0].set_xlabel("round"); ax[0].set_ylabel("uploading clients (of 30)")
+ax[0].set_xlabel("communication round (count)"); ax[0].set_ylabel("uploading clients (count)")
 ax[0].set_title("(a) clients uploading per round (10-round mean)", fontsize=8)
 ax[1].set_xticks(range(3)); ax[1].set_xticklabels(["low battery", "mid battery", "high battery"])
-ax[1].set_ylabel(r"$\sum_r \delta_i^r$ per client")
+ax[1].set_xlabel("battery tercile (10 clients each)"); ax[1].set_ylabel(r"$c_i=\sum_r \delta_i^r$ per client (–)")
 ax[1].set_title("(b) delivered contraction per client, by battery tercile", fontsize=8)
 h, l = ax[1].get_legend_handles_labels()
-fig.tight_layout(w_pad=0.8, rect=(0, 0.11, 1, 1))
+fig.tight_layout(w_pad=0.8, rect=(0, 0.17, 1, 1))
 fig.legend(h, l, loc="lower center", ncol=4, columnspacing=1.2)
 fig.savefig(FIG / "fig_fairness.pdf"); plt.close(fig)
 print("\nfigures ->", FIG)

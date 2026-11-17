@@ -2,8 +2,8 @@
 
 End-term idea paper for *Next Generation Computing* (B.Tech AI & ML, Semester VII).
 
-- **Paper:** [`paper/paper.pdf`](paper/paper.pdf) (IEEE conference format, 6 pages), source in [`paper/paper.tex`](paper/paper.tex)
-- **Code:** `energy.py` (radio model and allocation rules), `fl_sim.py` (simulator), `analysis.py` (tables and figures)
+- **Paper:** [`paper/paper.pdf`](paper/paper.pdf) (IEEE conference format, 6 pages including references), source in [`paper/paper.tex`](paper/paper.tex)
+- **Code:** `energy.py` (radio model and allocation rules), `fl_sim.py` (simulator), `analysis.py` (figures and tables), `paper_numbers.py` (every other number in the text)
 - **Raw results:** one JSON log per run in `results/`, summary in `results/summary.json`
 
 ## The question
@@ -77,18 +77,43 @@ and differences under one point are at the edge of seed noise. See Section VII o
 
 ## Reproduce
 
+Tested with Python 3.13.18, PyTorch 2.15.0 (CPU), NumPy 2.5.3, Matplotlib 3.11.2 on a 4-vCPU VM with
+no GPU. One run takes 10–16 minutes on one thread; all 39 runs take about 8 CPU-hours (about 2 hours
+with four in parallel). Seeds 0–2 are the main grid; seeds 3–4 are the fresh-seed confirmation.
+
 ```bash
 pip install torch numpy matplotlib pillow
-curl -O https://s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz      # lossless PNG mirror of CIFAR-10
+```
+
+```bash
+curl -O https://s3.amazonaws.com/fast-ai-imageclas/cifar10.tgz
 mkdir -p data/raw && tar -xzf cifar10.tgz -C data/raw
 python prepare_data.py data/raw/cifar10 data/cifar10.npz
-python energy.py                 # prints the radio model numbers
-./run_all.sh                     # 33 runs, about 2 h on 4 CPU cores
-./run_confirm.sh                 # 6 runs on fresh seeds
-python analysis.py results figures
-cd paper && pdflatex paper.tex && pdflatex paper.tex
 ```
+
+```bash
+DATA=data/cifar10.npz JOBS=4 ./run_all.sh        # 33 runs -> results/*.json
+DATA=data/cifar10.npz JOBS=4 ./run_confirm.sh    # 6 runs  -> results/confirm/*.json
+```
+
+| Paper item | Command | Output |
+|---|---|---|
+| Fig. 1, Fig. 2, Fig. 3, Table II, Table III | `python analysis.py results figures` | `figures/fig_model.pdf`, `fig_accuracy.pdf`, `fig_fairness.pdf`; table values on stdout and in `results/summary.json` |
+| Table I and every other number in the text | `python energy.py` and `python paper_numbers.py results` | stdout |
+| Paper PDF | `cd paper && pdflatex paper.tex && pdflatex paper.tex` | `paper/paper.pdf` |
+
+The run logs used in the paper are committed in `results/`, so the analysis commands work without
+re-running training.
 
 A single run: `python fl_sim.py --policy mvt --seed 0 --out results/mvt-s0.json`.
 Policies: `fixed` (with `--rho`), `blind`, `greedy`, `dos`, `mvt`, `mvtcap`; add `--unconstrained` for
 unlimited batteries.
+
+## Submission files
+
+`submission/` holds what the course asks for besides the code:
+
+- `NGC_EndTerm_AnsonDias.pdf`: the paper
+- `reproducibility_sheet.pdf` (source `.tex`): tool versions, seeds, hardware, runtime and the command for each figure
+- `ai_use_declaration.md`: draft AI-use declaration, to be completed and signed by the student
+- `references_to_verify.md`: every reference with a link, to be opened and checked by the student
